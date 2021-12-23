@@ -6,3 +6,6 @@
 
 [context.dev.environment]
   APP_ENV = "DEV"
+
+[context."feature/fushang318_login"]
+command = "env"
