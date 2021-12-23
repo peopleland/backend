@@ -1,3 +1,6 @@
+[[plugins]]
+  package = "@helloample/netlify-plugin-replace"
+
 [functions]
   directory = "functions/"
 
