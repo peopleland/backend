@@ -1,16 +1,13 @@
 package main
 
 import (
+	"backend/lib/helper"
 	"encoding/json"
 	"errors"
-	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/golang-jwt/jwt"
-	"os"
-	"strings"
-
-	"backend/lib/helper"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/spf13/viper"
+	"os"
 )
 
 type LoginPayload struct {
@@ -49,9 +46,9 @@ func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
 	if !verifed {
 		return nil, errors.New("request.verify.error")
 	}
-	address := strings.ToLower(loginPayload.Address)
+	//address := strings.ToLower(loginPayload.Address)
 
-	claims := jwt.MapClaims{"address": address}
+	//claims := jwt.MapClaims{"address": address}
 	//jwtStr, err := helper.EncodeJwt(claims, viper.GetString("JWT_RSA_PRIVATE_KEY_PEM"), int64(86400))
 	//if err != nil {
 	//	return nil, errors.New("request.jwt.error")
