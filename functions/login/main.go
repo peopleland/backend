@@ -51,7 +51,7 @@ func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
 	claims := jwt.MapClaims{"address": address}
 	jwtStr, err := helper.EncodeJwt(claims, viper.GetString("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM"), int64(86400))
 	if err != nil {
-		return nil, errors.New("request.jwt.error | " + viper.GetString("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM"))
+		return nil, errors.New("request.jwt.error | " + viper.GetString("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM") + " | " + os.Getenv("DEV_PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM"))
 	}
 	return &LoginResponseBody{Jwt: jwtStr}, nil
 }
