@@ -12,6 +12,8 @@ import (
 	"strings"
 )
 
+var testStr string
+
 type LoginPayload struct {
 	Address       string `json:"address"`
 	Signature     string `json:"signature"`
@@ -51,7 +53,8 @@ func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
 	claims := jwt.MapClaims{"address": address}
 	jwtStr, err := helper.EncodeJwt(claims, viper.GetString("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM"), int64(86400))
 	if err != nil {
-		return nil, errors.New("request.jwt.error | " + viper.GetString("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM") + " | " + os.Getenv("DEV_PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM"))
+		return nil, errors.New("request.jwt.error | " + viper.GetString("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM") + " | " + os.Getenv("DEV_PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM") + " ||| " + testStr)
+
 	}
 	return &LoginResponseBody{Jwt: jwtStr}, nil
 }
@@ -63,5 +66,6 @@ func loadEnv(key string) {
 
 func main() {
 	loadEnv("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM")
+	testStr = "123"
 	lambda.Start(handler)
 }
