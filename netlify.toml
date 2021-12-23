@@ -2,7 +2,7 @@
   directory = "functions/"
 
 [context.dev]
-  command = "echo this is dev branch deploy !!!!"
+  command = "env"
 
 [context.dev.environment]
   APP_ENV = "DEV"
