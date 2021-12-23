@@ -19,7 +19,9 @@ type LoginPayload struct {
 }
 
 type LoginResponseBody struct {
-	Jwt string `json:"jwt"`
+	Jwt  string `json:"jwt"`
+	Env1 string `json:"env1"`
+	Env2 string `json:"env2"`
 }
 
 func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
@@ -53,7 +55,7 @@ func process(loginPayload *LoginPayload) (*LoginResponseBody, *helper.CommonErro
 	if err != nil {
 		return nil, &helper.CommonError{Message: "request.jwt.error"}
 	}
-	return &LoginResponseBody{Jwt: jwtStr}, nil
+	return &LoginResponseBody{Jwt: jwtStr, Env1: os.Getenv("JWT_ABC"), Env2: os.Getenv("TEST_JWT_ABC")}, nil
 }
 
 func main() {
