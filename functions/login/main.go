@@ -12,7 +12,8 @@ import (
 	"strings"
 )
 
-var testStr string
+var AppEnv string
+var PeoplelandJwtRsaPrivateKeyPem string
 
 type LoginPayload struct {
 	Address       string `json:"address"`
@@ -53,19 +54,20 @@ func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
 	claims := jwt.MapClaims{"address": address}
 	jwtStr, err := helper.EncodeJwt(claims, viper.GetString("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM"), int64(86400))
 	if err != nil {
-		return nil, errors.New("request.jwt.error | " + viper.GetString("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM") + " | " + os.Getenv("DEV_PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM") + " ||| " + testStr)
+		return nil, errors.New("request.jwt.error | " + viper.GetString("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM") + " | " + os.Getenv("DEV_PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM") + " ||| " + AppEnv + " |||| " + PeoplelandJwtRsaPrivateKeyPem)
 
 	}
 	return &LoginResponseBody{Jwt: jwtStr}, nil
 }
 
-func loadEnv(key string) {
-	preifx := os.Getenv("APP_ENV")
-	viper.Set(key, os.Getenv(strings.Join([]string{preifx, key}, "_")))
+func loadEnv(key string) (res string) {
+	res = os.Getenv(strings.Join([]string{AppEnv, key}, "_"))
+	viper.Set(key, res)
+	return res
 }
 
 func main() {
-	loadEnv("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM")
-	testStr = "123"
+	AppEnv = os.Getenv("APP_ENV")
+	PeoplelandJwtRsaPrivateKeyPem = loadEnv("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM")
 	lambda.Start(handler)
 }
