@@ -16,4 +16,4 @@
   command = "env"
 
 [context.test]
-  command = "env"
+  command = "env && echo test"
