@@ -1,2 +1,2 @@
 [context.dev]
-  command = "echo this is dev branch deploy !!!"
+  command = "echo this is dev branch deploy !!!!"
