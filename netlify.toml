@@ -1,19 +1,12 @@
-[[plugins]]
-  package = 'netlify-plugin-contextual-env'
-  [plugins.inputs]
-    mode = 'prefix'
-
 [functions]
   directory = "functions/"
 
 [context.dev]
   command = "env"
-
-[context.dev.environment]
-  APP_ENV = "DEV"
+  [environment]
+    APP_ENV = "DEV"
 
 [context."feature/fushang318_login"]
   command = "env"
-
-[context.test]
-  command = "env && echo test"
+  [environment]
+    APP_ENV = "DEV"
