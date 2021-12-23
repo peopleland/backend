@@ -3,10 +3,10 @@
 
 [context.dev]
   command = "env"
-  [environment]
+  [context.dev.environment]
     APP_ENV = "DEV"
 
 [context."feature/fushang318_login"]
   command = "env"
-  [environment]
+  [context."feature/fushang318_login".environment]
     APP_ENV = "DEV"
