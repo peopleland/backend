@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/golang-jwt/jwt"
 	"os"
@@ -36,24 +37,24 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	}
 
 	body, err1 := process(&loginPayload)
-	if err != nil {
-		return helper.Build500Response(err1.Message)
+	if err1 != nil {
+		return helper.Build500Response(err1.Error())
 	}
 
 	return helper.BuildJsonResponse(body)
 }
 
-func process(loginPayload *LoginPayload) (*LoginResponseBody, *helper.CommonError) {
+func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
 	verifed := helper.VerifyEip191Sig(loginPayload.Address, loginPayload.OriginMessage, loginPayload.Signature)
 	if !verifed {
-		return nil, &helper.CommonError{Message: "request.verify.error"}
+		return nil, errors.New("request.verify.error")
 	}
 	address := strings.ToLower(loginPayload.Address)
 
 	claims := jwt.MapClaims{"address": address}
 	jwtStr, err := helper.EncodeJwt(claims, viper.GetString("JWT_RSA_PRIVATE_KEY_PEM"), int64(86400))
 	if err != nil {
-		return nil, &helper.CommonError{Message: "request.jwt.error"}
+		return nil, errors.New("request.jwt.error")
 	}
 	return &LoginResponseBody{Jwt: jwtStr, Env1: os.Getenv("JWT_ABC"), Env2: os.Getenv("TEST_JWT_ABC")}, nil
 }
