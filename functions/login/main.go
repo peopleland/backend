@@ -6,8 +6,10 @@ import (
 	"errors"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/golang-jwt/jwt"
 	"github.com/spf13/viper"
 	"os"
+	"strings"
 )
 
 type LoginPayload struct {
@@ -17,9 +19,7 @@ type LoginPayload struct {
 }
 
 type LoginResponseBody struct {
-	Jwt  string `json:"jwt"`
-	Env1 string `json:"env1"`
-	Env2 string `json:"env2"`
+	Jwt string `json:"jwt"`
 }
 
 func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
@@ -46,17 +46,22 @@ func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
 	if !verifed {
 		return nil, errors.New("request.verify.error")
 	}
-	//address := strings.ToLower(loginPayload.Address)
+	address := strings.ToLower(loginPayload.Address)
 
-	//claims := jwt.MapClaims{"address": address}
-	//jwtStr, err := helper.EncodeJwt(claims, viper.GetString("JWT_RSA_PRIVATE_KEY_PEM"), int64(86400))
-	//if err != nil {
-	//	return nil, errors.New("request.jwt.error")
-	//}
-	return &LoginResponseBody{Jwt: "123", Env1: os.Getenv("JWT_ABC"), Env2: os.Getenv("TEST_JWT_ABC")}, nil
+	claims := jwt.MapClaims{"address": address}
+	jwtStr, err := helper.EncodeJwt(claims, viper.GetString("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM"), int64(86400))
+	if err != nil {
+		return nil, errors.New("request.jwt.error")
+	}
+	return &LoginResponseBody{Jwt: jwtStr}, nil
+}
+
+func loadEnv(key string) {
+	preifx := os.Getenv("APP_ENV")
+	viper.Set(key, os.Getenv(strings.Join([]string{preifx, key}, "_")))
 }
 
 func main() {
-	viper.Set("JWT_RSA_PRIVATE_KEY_PEM", os.Getenv("JWT_RSA_PRIVATE_KEY_PEM"))
+	loadEnv("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM")
 	lambda.Start(handler)
 }
