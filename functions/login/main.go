@@ -52,11 +52,11 @@ func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
 	address := strings.ToLower(loginPayload.Address)
 
 	claims := jwt.MapClaims{"address": address}
-	jwtStr, err := helper.EncodeJwt(claims, viper.GetString("JWT_RSA_PRIVATE_KEY_PEM"), int64(86400))
-	if err != nil {
-		return nil, errors.New("request.jwt.error")
-	}
-	return &LoginResponseBody{Jwt: jwtStr, Env1: os.Getenv("JWT_ABC"), Env2: os.Getenv("TEST_JWT_ABC")}, nil
+	//jwtStr, err := helper.EncodeJwt(claims, viper.GetString("JWT_RSA_PRIVATE_KEY_PEM"), int64(86400))
+	//if err != nil {
+	//	return nil, errors.New("request.jwt.error")
+	//}
+	return &LoginResponseBody{Jwt: "1", Env1: os.Getenv("JWT_ABC"), Env2: os.Getenv("TEST_JWT_ABC")}, nil
 }
 
 func main() {
