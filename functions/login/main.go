@@ -53,7 +53,7 @@ func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
 	//if err != nil {
 	//	return nil, errors.New("request.jwt.error")
 	//}
-	return &LoginResponseBody{Jwt: "1", Env1: os.Getenv("JWT_ABC"), Env2: os.Getenv("TEST_JWT_ABC")}, nil
+	return &LoginResponseBody{Jwt: "123", Env1: os.Getenv("JWT_ABC"), Env2: os.Getenv("TEST_JWT_ABC")}, nil
 }
 
 func main() {
