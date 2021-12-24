@@ -1,6 +1,11 @@
 [[plugins]]
   package = "@helloample/netlify-plugin-replace"
 
+[[plugins]]
+  package = "netlify-plugin-use-env-in-runtime"
+  [plugins.inputs]
+    prefix = "APP"
+
 [functions]
   directory = "functions/"
   included_files = ["config.yml"]

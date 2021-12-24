@@ -3,13 +3,15 @@ package main
 import (
 	"backend/lib/helper"
 	"errors"
+	"fmt"
+	"os"
+	"os/exec"
+	"strings"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/golang-jwt/jwt"
 	"github.com/spf13/viper"
-	"os"
-	"os/exec"
-	"strings"
 )
 
 var AppEnv string
@@ -45,6 +47,7 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	pwdStr, _ := os.Getwd()
 	com := exec.Command("ls")
 	bytes, _ := com.Output()
+	fmt.Println(os.Environ())
 	l := LoginResponseBody{Jwt: pwdStr + " | " + string(bytes) + " || " + os.Getenv("APP_ENV") + " || " + os.Getenv("BRANCH") + " || " + os.Getenv("CONTEXT")}
 	return helper.BuildJsonResponse(&l)
 }
