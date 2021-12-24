@@ -2,8 +2,8 @@ package main
 
 import (
 	"backend/lib/helper"
-	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/golang-jwt/jwt"
@@ -26,22 +26,33 @@ type LoginResponseBody struct {
 }
 
 func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
-	if request.HTTPMethod != "POST" {
-		return helper.Build500Response("request.http_method.error")
-	}
+	//if request.HTTPMethod != "POST" {
+	//	return helper.Build500Response("request.http_method.error")
+	//}
 
-	var loginPayload LoginPayload
-	var err error
-	if err = json.Unmarshal([]byte(request.Body), &loginPayload); err != nil {
-		return helper.Build500Response("request.format.error")
-	}
+	//var loginPayload LoginPayload
+	//var err error
+	//if err = json.Unmarshal([]byte(request.Body), &loginPayload); err != nil {
+	//	return helper.Build500Response("request.format.error")
+	//}
+	//
+	//body, err1 := process(&loginPayload)
+	//if err1 != nil {
+	//	return helper.Build500Response(err1.Error())
+	//}
 
-	body, err1 := process(&loginPayload)
-	if err1 != nil {
-		return helper.Build500Response(err1.Error())
+	//return helper.BuildJsonResponse(body)
+	viper.SetConfigName("config")
+	viper.SetConfigType("yaml")
+	viper.AddConfigPath("../")
+	err := viper.ReadInConfig() //根据上面配置加载文件
+	if err != nil {
+		fmt.Println(err)
+		return nil, nil
 	}
+	l := LoginResponseBody{Jwt: viper.GetString("ABC")}
 
-	return helper.BuildJsonResponse(body)
+	return helper.BuildJsonResponse(&l)
 }
 
 func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
