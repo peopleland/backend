@@ -48,7 +48,7 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	com := exec.Command("ls")
 	bytes, _ := com.Output()
 	fmt.Println(os.Environ())
-	l := LoginResponseBody{Jwt: pwdStr + " | " + string(bytes) + " || " + os.Getenv("APP_ENV") + " || " + os.Getenv("BRANCH") + " || " + os.Getenv("CONTEXT")}
+	l := LoginResponseBody{Jwt: pwdStr + " | " + string(bytes) + " || " + os.Getenv("APP_ENV") + " || " + os.Getenv("BRANCH") + " || " + os.Getenv("CONTEXT") + os.Getenv("TEST_APP_ENV") + os.Getenv("TEST_BRANCH")}
 	return helper.BuildJsonResponse(&l)
 }
 
