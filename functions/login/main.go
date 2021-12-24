@@ -3,6 +3,7 @@ package main
 import (
 	"backend/lib/config"
 	"backend/lib/helper"
+	"backend/lib/models"
 	"encoding/json"
 	"errors"
 	"strings"
@@ -21,8 +22,6 @@ type LoginPayload struct {
 type LoginResponseBody struct {
 	Jwt string `json:"jwt"`
 }
-
-var config env_config.Config
 
 func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
 	if request.HTTPMethod != "POST" {
@@ -50,16 +49,21 @@ func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
 	}
 	address := strings.ToLower(loginPayload.Address)
 
-	claims := jwt.MapClaims{"address": address}
-	jwtStr, err := helper.EncodeJwt(claims, config.JwtRsaPrivateKeyPem, int64(86400))
+	_, err1 := models.FindOrCreateUser(env_config.FaunadbClient, address)
+	if err1 != nil {
+		return nil, errors.New("request.db.error")
+	}
 
-	if err != nil {
+	claims := jwt.MapClaims{"address": address}
+	jwtStr, err2 := helper.EncodeJwt(claims, env_config.Conf.JwtRsaPrivateKeyPem, int64(86400))
+	if err2 != nil {
 		return nil, errors.New("request.jwt.error")
 	}
 	return &LoginResponseBody{Jwt: jwtStr}, nil
 }
 
 func main() {
-	env_config.BuildConfig(&config)
+	env_config.BuildConfig()
+	env_config.InitFaunadbClient()
 	lambda.Start(handler)
 }
