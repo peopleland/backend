@@ -1,6 +1,7 @@
 package env_config
 
 import (
+	f "github.com/fauna/faunadb-go/v4/faunadb"
 	"github.com/spf13/viper"
 	"os"
 	"strings"
@@ -8,7 +9,12 @@ import (
 
 type Config struct {
 	JwtRsaPrivateKeyPem string `mapstructure:"PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM"`
+	FaunadbSecret       string `mapstructure:"PEOPLELAND_FAUNADB_SECRET"`
 }
+
+var FaunadbClient *f.FaunaClient
+
+var Conf Config
 
 func loadEnvWithReplace(key string, old string, new string) {
 	res := os.Getenv(key)
@@ -16,7 +22,16 @@ func loadEnvWithReplace(key string, old string, new string) {
 	viper.Set(key, res)
 }
 
-func BuildConfig(config *Config) {
+func loadEnv(key string) {
+	viper.Set(key, os.Getenv(key))
+}
+
+func InitFaunadbClient() {
+	FaunadbClient = f.NewFaunaClient(Conf.FaunadbSecret)
+}
+
+func BuildConfig() {
 	loadEnvWithReplace("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM", "\\n", "\n")
-	viper.Unmarshal(config)
+	loadEnv("PEOPLELAND_FAUNADB_SECRET")
+	viper.Unmarshal(&Conf)
 }
