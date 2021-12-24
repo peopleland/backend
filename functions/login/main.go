@@ -44,7 +44,7 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	//return helper.BuildJsonResponse(body)
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
-	viper.AddConfigPath("../")
+	viper.AddConfigPath("./")
 	err := viper.ReadInConfig() //根据上面配置加载文件
 	if err != nil {
 		fmt.Println(err)
