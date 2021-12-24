@@ -2,10 +2,9 @@ package main
 
 import (
 	"backend/lib/helper"
+	"encoding/json"
 	"errors"
-	"fmt"
 	"os"
-	"os/exec"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -13,9 +12,6 @@ import (
 	"github.com/golang-jwt/jwt"
 	"github.com/spf13/viper"
 )
-
-var AppEnv string
-var PeoplelandJwtRsaPrivateKeyPem string
 
 type LoginPayload struct {
 	Address       string `json:"address"`
@@ -28,28 +24,22 @@ type LoginResponseBody struct {
 }
 
 func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
-	//if request.HTTPMethod != "POST" {
-	//	return helper.Build500Response("request.http_method.error")
-	//}
+	if request.HTTPMethod != "POST" {
+		return helper.Build500Response("request.http_method.error")
+	}
 
-	//var loginPayload LoginPayload
-	//var err error
-	//if err = json.Unmarshal([]byte(request.Body), &loginPayload); err != nil {
-	//	return helper.Build500Response("request.format.error")
-	//}
-	//
-	//body, err1 := process(&loginPayload)
-	//if err1 != nil {
-	//	return helper.Build500Response(err1.Error())
-	//}
+	var loginPayload LoginPayload
+	var err error
+	if err = json.Unmarshal([]byte(request.Body), &loginPayload); err != nil {
+		return helper.Build500Response("request.format.error")
+	}
 
-	//return helper.BuildJsonResponse(body)
-	pwdStr, _ := os.Getwd()
-	com := exec.Command("ls")
-	bytes, _ := com.Output()
-	fmt.Println(os.Environ())
-	l := LoginResponseBody{Jwt: pwdStr + " | " + string(bytes) + " || " + viper.GetString("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM")}
-	return helper.BuildJsonResponse(&l)
+	body, err1 := process(&loginPayload)
+	if err1 != nil {
+		return helper.Build500Response(err1.Error())
+	}
+
+	return helper.BuildJsonResponse(body)
 }
 
 func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
@@ -62,7 +52,7 @@ func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
 	claims := jwt.MapClaims{"address": address}
 	jwtStr, err := helper.EncodeJwt(claims, viper.GetString("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM"), int64(86400))
 	if err != nil {
-		return nil, errors.New("request.jwt.error | " + viper.GetString("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM") + " | " + os.Getenv("DEV_PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM") + " ||| " + AppEnv + " |||| " + PeoplelandJwtRsaPrivateKeyPem)
+		return nil, errors.New("request.jwt.error")
 
 	}
 	return &LoginResponseBody{Jwt: jwtStr}, nil
