@@ -19,3 +19,7 @@ package = "netlify-plugin-use-env-in-runtime"
   [plugins.inputs]
     prefix = "TEST"
     def = ["APP_ENV", "BRANCH"]
+[[plugins]]
+package = 'netlify-plugin-contextual-env'
+  [plugins.inputs]
+    mode = 'prefix'
