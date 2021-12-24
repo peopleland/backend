@@ -3,12 +3,12 @@ package main
 import (
 	"backend/lib/helper"
 	"errors"
-	"fmt"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/golang-jwt/jwt"
 	"github.com/spf13/viper"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -42,16 +42,10 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	//}
 
 	//return helper.BuildJsonResponse(body)
-	viper.SetConfigName("config")
-	viper.SetConfigType("yaml")
-	viper.AddConfigPath("./")
-	err := viper.ReadInConfig() //根据上面配置加载文件
-	if err != nil {
-		fmt.Println(err)
-		return nil, nil
-	}
-	l := LoginResponseBody{Jwt: viper.GetString("ABC")}
-
+	pwdStr, _ := os.Getwd()
+	com := exec.Command("ls")
+	bytes, _ := com.Output()
+	l := LoginResponseBody{Jwt: pwdStr + " | " + string(bytes)}
 	return helper.BuildJsonResponse(&l)
 }
 
