@@ -1,5 +1,6 @@
 [functions]
   directory = "functions/"
+  included_files = ["*.yml"]
 
 [context.dev]
   command = "env"
@@ -16,5 +17,5 @@
 [[plugins]]
 package = "netlify-plugin-use-env-in-runtime"
   [plugins.inputs]
-    prefix = ""
+    prefix = "TEST"
     def = ["APP_ENV", "BRANCH"]
