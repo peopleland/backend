@@ -1,3 +1,5 @@
+[functions]
+  directory = "functions/"
 
 [context.dev]
   command = "env"
