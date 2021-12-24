@@ -48,7 +48,7 @@ func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResp
 	com := exec.Command("ls")
 	bytes, _ := com.Output()
 	fmt.Println(os.Environ())
-	l := LoginResponseBody{Jwt: pwdStr + " | " + string(bytes) + " || " + os.Getenv("APP_ENV") + " || " + os.Getenv("BRANCH") + " || " + os.Getenv("CONTEXT") + os.Getenv("TEST_APP_ENV") + os.Getenv("TEST_BRANCH")}
+	l := LoginResponseBody{Jwt: pwdStr + " | " + string(bytes) + " || " + viper.GetString("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM")}
 	return helper.BuildJsonResponse(&l)
 }
 
@@ -69,13 +69,12 @@ func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
 }
 
 func loadEnv(key string) (res string) {
-	res = os.Getenv(strings.Join([]string{AppEnv, key}, "_"))
+	res = os.Getenv(key)
 	viper.Set(key, res)
 	return res
 }
 
 func main() {
-	AppEnv = os.Getenv("APP_ENV")
-	PeoplelandJwtRsaPrivateKeyPem = loadEnv("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM")
+	loadEnv("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM")
 	lambda.Start(handler)
 }

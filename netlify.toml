@@ -1,25 +1,3 @@
 [functions]
   directory = "functions/"
   included_files = ["*.yml"]
-
-[context.dev]
-  command = "env"
-
-[context.dev.environment]
-  APP_ENV = "DEV"
-
-[context."feature/fushang318_login"]
-  command = "env"
-
-[context."feature/fushang318_login".environment]
-  APP_ENV = "DEV"
-
-[[plugins]]
-package = "netlify-plugin-use-env-in-runtime"
-  [plugins.inputs]
-    prefix = "TEST"
-    def = ["APP_ENV", "BRANCH"]
-[[plugins]]
-package = 'netlify-plugin-contextual-env'
-  [plugins.inputs]
-    mode = 'prefix'
