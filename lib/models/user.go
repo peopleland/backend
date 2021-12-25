@@ -5,14 +5,14 @@ import (
 )
 
 type User struct {
-	Name    string `fauna:"name"`
-	Address string `fauna:"address"`
+	Name    string `fauna:"name" json:"name"`
+	Address string `fauna:"address" json:"address"`
 }
 
 type UserDb struct {
-	ref  f.RefV `fauna:"ref"`
-	ts   int64  `fauna:"ts"`
-	data User   `fauna:"data"`
+	Ref  f.RefV `fauna:"ref" json:"ref"`
+	Ts   int64  `fauna:"ts" json:"ts"`
+	Data User   `fauna:"data" json:"data"`
 }
 
 func CreateUser(client *f.FaunaClient, address string) (*UserDb, error) {
@@ -21,15 +21,15 @@ func CreateUser(client *f.FaunaClient, address string) (*UserDb, error) {
 		return nil, err
 	}
 	var userdb UserDb
-	err1 := result.At(f.ObjKey("ts")).Get(&userdb.ts)
+	err1 := result.At(f.ObjKey("ts")).Get(&userdb.Ts)
 	if err1 != nil {
 		return nil, err1
 	}
-	err2 := result.At(f.ObjKey("data")).Get(&userdb.data)
+	err2 := result.At(f.ObjKey("data")).Get(&userdb.Data)
 	if err2 != nil {
 		return nil, err2
 	}
-	err3 := result.At(f.ObjKey("ref")).Get(&userdb.ref)
+	err3 := result.At(f.ObjKey("ref")).Get(&userdb.Ref)
 	if err3 != nil {
 		return nil, err1
 	}
@@ -49,15 +49,15 @@ func GetOneUserByAddress(client *f.FaunaClient, address string) (*UserDb, error)
 		return nil, err
 	}
 	var userdb UserDb
-	err1 := result.At(f.ObjKey("ts")).Get(&userdb.ts)
+	err1 := result.At(f.ObjKey("ts")).Get(&userdb.Ts)
 	if err1 != nil {
 		return nil, err1
 	}
-	err2 := result.At(f.ObjKey("data")).Get(&userdb.data)
+	err2 := result.At(f.ObjKey("data")).Get(&userdb.Data)
 	if err2 != nil {
 		return nil, err2
 	}
-	err3 := result.At(f.ObjKey("ref")).Get(&userdb.ref)
+	err3 := result.At(f.ObjKey("ref")).Get(&userdb.Ref)
 	if err3 != nil {
 		return nil, err1
 	}

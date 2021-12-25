@@ -9,6 +9,7 @@ import (
 
 type Config struct {
 	JwtRsaPrivateKeyPem string `mapstructure:"PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM"`
+	JwtRsaPublicKeyPem  string `mapstructure:"PEOPLELAND_JWT_RSA_PUBLIC_KEY_PEM"`
 	FaunadbSecret       string `mapstructure:"PEOPLELAND_FAUNADB_SECRET"`
 }
 
@@ -32,6 +33,7 @@ func InitFaunadbClient() {
 
 func BuildConfig() {
 	loadEnvWithReplace("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM", "\\n", "\n")
+	loadEnvWithReplace("PEOPLELAND_JWT_RSA_PUBLIC_KEY_PEM", "\\n", "\n")
 	loadEnv("PEOPLELAND_FAUNADB_SECRET")
 	viper.Unmarshal(&Conf)
 }
