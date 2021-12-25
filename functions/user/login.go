@@ -4,13 +4,11 @@ import (
 	"backend/lib/config"
 	"backend/lib/helper"
 	"backend/lib/models"
-	"encoding/json"
 	"errors"
-	"strings"
-
-	"github.com/aws/aws-lambda-go/events"
-	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/golang-jwt/jwt"
+	"github.com/labstack/echo/v4"
+	"net/http"
+	"strings"
 )
 
 type LoginPayload struct {
@@ -23,23 +21,26 @@ type LoginResponseBody struct {
 	Jwt string `json:"jwt"`
 }
 
-func handler(request events.APIGatewayProxyRequest) (*events.APIGatewayProxyResponse, error) {
-	if request.HTTPMethod != "POST" {
-		return helper.Build500Response("request.http_method.error")
+func login(c echo.Context) error {
+	defer c.Response().Header().Set(echo.HeaderContentType, echo.MIMEApplicationJSONCharsetUTF8)
+
+	lp := new(LoginPayload)
+	if err := c.Bind(lp); err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": "request.format.error",
+		})
 	}
 
-	var loginPayload LoginPayload
-	var err error
-	if err = json.Unmarshal([]byte(request.Body), &loginPayload); err != nil {
-		return helper.Build500Response("request.format.error")
-	}
-
-	body, err1 := process(&loginPayload)
+	body, err1 := process(lp)
 	if err1 != nil {
-		return helper.Build500Response(err1.Error())
+		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": err1.Error(),
+		})
 	}
 
-	return helper.BuildJsonResponse(body)
+	return c.JSON(http.StatusOK, map[string]interface{}{
+		"data": body,
+	})
 }
 
 func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
@@ -60,10 +61,4 @@ func process(loginPayload *LoginPayload) (*LoginResponseBody, error) {
 		return nil, errors.New("request.jwt.error")
 	}
 	return &LoginResponseBody{Jwt: jwtStr}, nil
-}
-
-func main() {
-	env_config.BuildConfig()
-	env_config.InitFaunadbClient()
-	lambda.Start(handler)
 }
