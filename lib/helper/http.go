@@ -1,9 +1,11 @@
 package helper
 
 import (
+	env_config "backend/lib/config"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/labstack/echo/v4"
 )
 
 type CommonError struct {
@@ -54,4 +56,14 @@ func BuildJsonResponse(data interface{}) (*events.APIGatewayProxyResponse, error
 		Body:            string(jsonBody),
 		IsBase64Encoded: false,
 	}, nil
+}
+
+func GetCurrentUserAddress(c echo.Context) string {
+	jwtStr := c.Request().Header.Get("authorization")
+	jwtMap, err := DecodeJwt(jwtStr, env_config.Conf.JwtRsaPublicKeyPem)
+	if err != nil {
+		return ""
+	}
+	address := (*jwtMap)["address"].(string)
+	return address
 }

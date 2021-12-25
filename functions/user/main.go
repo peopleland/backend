@@ -22,9 +22,11 @@ func main() {
 
 	e := echo.New()
 	g := e.Group("/.netlify/functions/user")
+
 	g.POST("/login", login)
 	g.GET("/profile", getProfile)
-	echoLambda = echoadapter.New(e)
+	g.PUT("/profile", changeProfile)
 
+	echoLambda = echoadapter.New(e)
 	lambda.Start(handler)
 }
