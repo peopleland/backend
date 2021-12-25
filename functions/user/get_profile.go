@@ -9,18 +9,16 @@ import (
 )
 
 func getProfile(c echo.Context) error {
-	jwtStr := c.Request().Header.Get("authorization")
-	jwtMap, err := helper.DecodeJwt(jwtStr, env_config.Conf.JwtRsaPublicKeyPem)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
-			"error": "request.jwt.format.error",
+	address := helper.GetCurrentUserAddress(c)
+	if address == "" {
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
+			"error": "request.user.not_found",
 		})
 	}
-	address := (*jwtMap)["address"].(string)
 	user, err1 := models.GetOneUserByAddress(env_config.FaunadbClient, address)
 
 	if err1 != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]interface{}{
+		return c.JSON(http.StatusUnauthorized, map[string]interface{}{
 			"error": "request.user.not_found",
 		})
 	}
