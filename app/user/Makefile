@@ -1,0 +1,3 @@
+
+build-user:
+	mkdir -p bin/ && go build -ldflags "-X main.Version=$(VERSION)" -o /bin/ ./...

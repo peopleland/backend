@@ -12,9 +12,29 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+ vendor/
+
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# OS General
+Thumbs.db
+.DS_Store
+
+# project
+*.cert
+*.key
+*.log
+**/bin/**
 
 # Local Netlify folder
 .netlify
 
+# Develop tools
+.vscode/
 .idea
+*.swp
+
+**/config.yaml

@@ -1,4 +1,4 @@
-package helper
+package jwt
 
 import (
 	"time"
@@ -6,18 +6,26 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-func EncodeJwt(claims jwt.MapClaims, privateKeyPemStr string, exp int64) (string, error) {
+type MapClaims struct {
+	jwt.MapClaims
+}
+
+func NewMapClaims(address string) *MapClaims {
+	return &MapClaims{map[string]interface{}{"address": address}}
+}
+
+func EncodeJwt(claims *MapClaims, privateKeyPemStr string, exp int64) (string, error) {
 	now := time.Now().Unix()
-	claims["iat"] = now
-	claims["nbf"] = now
-	claims["exp"] = now + exp
+	claims.MapClaims["iat"] = now
+	claims.MapClaims["nbf"] = now
+	claims.MapClaims["exp"] = now + exp
 
 	privateKey, err := jwt.ParseRSAPrivateKeyFromPEM([]byte(privateKeyPemStr))
 	if err != nil {
 		return "", err
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims.MapClaims)
 
 	tokenString, err2 := token.SignedString(privateKey)
 	if err2 != nil {
