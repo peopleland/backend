@@ -10,8 +10,7 @@ test:
 build-user:
 	mkdir -p bin/ && go build -o bin/user app/user/cmd/main.go
 
-build-netlify:
-	build-user
+build-netlify: build-user
 
 publish:
 	mkdir -p swagger/ && cp api/user/v1/user.swagger.yaml swagger/
