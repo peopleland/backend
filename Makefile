@@ -16,5 +16,4 @@ build-netlify:
 publish:
 	mkdir -p swagger/ && cp api/user/v1/user.swagger.yaml swagger/
 
-build:
-	init test build-netlify publish
+build: init test build-netlify publish
