@@ -5,8 +5,10 @@ import (
 	"backend/app/user/internal/biz"
 	"backend/app/user/internal/conf"
 	dt "backend/app/user/internal/data"
+	"backend/app/user/internal/mock_biz"
 	"backend/pkg/jwt"
 	"context"
+	"github.com/golang/mock/gomock"
 	"log"
 	"testing"
 
@@ -18,7 +20,7 @@ var publicKeyPem = "-----BEGIN PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8A
 var config = &conf.Config{
 	JwtRsaPrivateKeyPem: privateKeyPem,
 	JwtRsaPublicKeyPem:  publicKeyPem,
-	FaunaDBSecret:       "fnAEbMoNoqACTLHGcQsRsF5FqEL9YDyoNefP2ozf",
+	FaunaDBSecret:       "fnAEbfitSAACVKRgPF0ZYX-Q3zZiIE3jQpr_9km0",
 }
 
 var logger = log.Default()
@@ -27,7 +29,8 @@ func TestUserService_Login(t *testing.T) {
 
 	d, _ := dt.NewData(config, logger)
 	userRepo := dt.NewUserRepo(d, logger)
-	userUseCase := biz.NewUserUseCase(userRepo, config, logger)
+	twitterRepo := dt.NewTwitterOauth1Repo(config)
+	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, config, logger)
 	us := &UserService{
 		uc:     userUseCase,
 		logger: logger,
@@ -67,17 +70,17 @@ func TestUserService_Login(t *testing.T) {
 }
 
 func TestUserService_GetProfile(t *testing.T) {
-
 	d, _ := dt.NewData(config, logger)
 	userRepo := dt.NewUserRepo(d, logger)
-	userUseCase := biz.NewUserUseCase(userRepo, config, logger)
+	twitterRepo := dt.NewTwitterOauth1Repo(config)
+	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, config, logger)
 	us := &UserService{
 		uc:     userUseCase,
 		logger: logger,
 		conf:   config,
 	}
 
-	address := "0x3946d96a4b46657ca95CBE85d8a60b822186Ad1f"
+	address := "0x40fcc42c5a25945c02b19204d082a67591d30cf6"
 	claims := jwt.NewMapClaims(address)
 	exp := int64(86400)
 	jwtStr, err := jwt.EncodeJwt(claims, privateKeyPem, exp)
@@ -103,14 +106,15 @@ func TestUserService_GetProfile(t *testing.T) {
 func TestUserService_PutProfile(t *testing.T) {
 	d, _ := dt.NewData(config, logger)
 	userRepo := dt.NewUserRepo(d, logger)
-	userUseCase := biz.NewUserUseCase(userRepo, config, logger)
+	twitterRepo := dt.NewTwitterOauth1Repo(config)
+	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, config, logger)
 	us := &UserService{
 		uc:     userUseCase,
 		logger: logger,
 		conf:   config,
 	}
 
-	address := "0x3946d96a4b46657ca95CBE85d8a60b822186Ad1f"
+	address := "0x40fcc42c5a25945c02b19204d082a67591d30cf6"
 	claims := jwt.NewMapClaims(address)
 	exp := int64(86400)
 	jwtStr, err := jwt.EncodeJwt(claims, privateKeyPem, exp)
@@ -134,6 +138,65 @@ func TestUserService_PutProfile(t *testing.T) {
 			assert.Equal(t, got.Address, address)
 			assert.Equal(t, got.Name, "haha")
 			assert.Empty(t, err)
+		})
+	}
+}
+
+func TestUserService_ConnectTwitter(t *testing.T) {
+	mockCtl := gomock.NewController(t)
+	defer mockCtl.Finish()
+	mockTwitterRepo := mock_biz.NewMockTwitterRepo(mockCtl)
+
+	d, _ := dt.NewData(config, logger)
+	userRepo := dt.NewUserRepo(d, logger)
+	userUseCase := biz.NewUserUseCase(userRepo, mockTwitterRepo, config, logger)
+	us := &UserService{
+		uc:     userUseCase,
+		logger: logger,
+		conf:   config,
+	}
+
+	address := "0x40fcc42c5a25945c02b19204d082a67591d30cf6"
+	claims := jwt.NewMapClaims(address)
+	exp := int64(86400)
+	jwtStr, err := jwt.EncodeJwt(claims, privateKeyPem, exp)
+	if err != nil {
+		t.Failed()
+	}
+
+	ctx := context.WithValue(context.Background(), "authorization", jwtStr)
+
+	tests := []struct {
+		name    string
+		twitter string
+		tweets  []string
+		args    api.ConnectTwitterPayLoad
+		success bool
+	}{
+		{"1", "a", []string{"I am verifying my identity as 1 on peopleland"}, api.ConnectTwitterPayLoad{
+			Twitter: "a",
+		}, true},
+		{"2", "b", []string{"I am verifying my identity as 1 on peopleland"}, api.ConnectTwitterPayLoad{
+			Twitter: "b",
+		}, false},
+		{"3", "c", []string{"aaaaI am verifying my identity as 3 on peoplelandbbbb"}, api.ConnectTwitterPayLoad{
+			Twitter: "c",
+		}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, _ = userRepo.UpdateUserByAddress(ctx, address, map[string]interface{}{"name": tt.name})
+			mockTwitterRepo.EXPECT().GetTwitterUserTimeline(tt.twitter).Return(tt.tweets)
+
+			got, err := us.ConnectTwitter(ctx, &tt.args)
+			if tt.success {
+				assert.Equal(t, got.Address, address)
+				assert.Equal(t, got.Twitter, tt.twitter)
+				assert.Empty(t, err)
+			} else {
+				assert.NotEmpty(t, err)
+			}
+
 		})
 	}
 }

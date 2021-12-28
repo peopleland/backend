@@ -318,3 +318,7 @@ func (m *UserProfile) UnmarshalBinary(b []byte) error {
 	*m = res
 	return nil
 }
+
+type ConnectTwitterPayLoad struct {
+	Twitter string `json:"twitter"`
+}

@@ -9,7 +9,12 @@ import (
 	"context"
 	"errors"
 	"log"
+	"regexp"
 	"strings"
+)
+
+const (
+	twitterReg string = "I am verifying my identity as (\\S*) on peopleland"
 )
 
 type UserRepo interface {
@@ -19,17 +24,23 @@ type UserRepo interface {
 	UpdateUserByAddress(ctx context.Context, address string, updateData map[string]interface{}) (*model.UserDb, error)
 }
 
-type UserUseCase struct {
-	repo   UserRepo
-	logger *log.Logger
-	conf   *conf.Config
+type TwitterRepo interface {
+	GetTwitterUserTimeline(userScreenName string) []string
 }
 
-func NewUserUseCase(repo UserRepo, conf *conf.Config, logger *log.Logger) *UserUseCase {
+type UserUseCase struct {
+	repo        UserRepo
+	twitterRepo TwitterRepo
+	logger      *log.Logger
+	conf        *conf.Config
+}
+
+func NewUserUseCase(repo UserRepo, twitterRepo TwitterRepo, conf *conf.Config, logger *log.Logger) *UserUseCase {
 	return &UserUseCase{
-		repo:   repo,
-		logger: logger,
-		conf:   conf,
+		repo:        repo,
+		twitterRepo: twitterRepo,
+		logger:      logger,
+		conf:        conf,
 	}
 }
 
@@ -75,4 +86,39 @@ func (u *UserUseCase) UpdateProfile(ctx context.Context, address string, updateD
 	}
 
 	return &user.Data, nil
+}
+
+func (u *UserUseCase) ConnectTwitter(ctx context.Context, address string, load *v1.ConnectTwitterPayLoad) (*model.User, error) {
+	user, err := u.repo.GetOneUserByAddress(ctx, address)
+	if err != nil {
+		return nil, err
+	}
+	textList := u.twitterRepo.GetTwitterUserTimeline(load.Twitter)
+	var hasT bool
+	for _, text := range textList {
+		reg := regexp.MustCompile(twitterReg)
+		if reg == nil {
+			return nil, errors.New("reg.error")
+		}
+		result := reg.FindAllStringSubmatch(text, -1)
+		if len(result) != 0 {
+			name := result[0][1]
+			if name == user.Data.Name {
+				hasT = true
+			}
+		}
+	}
+
+	if !hasT {
+		return nil, errors.New("request.twitter.error")
+	}
+
+	updateData := map[string]string{
+		"twitter": load.Twitter,
+	}
+	profile, err := u.UpdateProfile(ctx, address, updateData)
+	if err != nil {
+		return nil, err
+	}
+	return profile, nil
 }

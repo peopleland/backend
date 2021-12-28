@@ -73,6 +73,32 @@ paths:
             properties:
               data:
                 $ref: "#/definitions/UserProfile"
+  /v1/connect_twitter:
+    put:
+      operationId: connectTwitter
+      security:
+        - Authorization: []
+      parameters:
+        - name: body
+          in: body
+          schema:
+            $ref: "#/definitions/ConnectTwitterPayLoad"
+      responses:
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        '400':
+          description: BadRequest
+          schema:
+            $ref: "#/definitions/ErrorResponse"
+        '200':
+          description: Success
+          schema:
+            type: object
+            properties:
+              data:
+                $ref: "#/definitions/UserProfile"
 definitions:
   LoginResponse:
     type: object
@@ -122,4 +148,9 @@ definitions:
       - error
     properties:
       error:
+        type: string
+  ConnectTwitterPayLoad:
+    type: object
+    properties:
+      twitter:
         type: string
