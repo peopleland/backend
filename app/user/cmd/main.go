@@ -32,6 +32,12 @@ func main() {
 	e.LoadEnvWithReplace("PEOPLELAND_JWT_RSA_PRIVATE_KEY_PEM", "\\n", "\n")
 	e.LoadEnvWithReplace("PEOPLELAND_JWT_RSA_PUBLIC_KEY_PEM", "\\n", "\n")
 	e.LoadEnv("PEOPLELAND_FAUNADB_SECRET")
+
+	e.LoadEnv("PEOPLELAND_TWITTER_CONSUMER_KEY")
+	e.LoadEnv("PEOPLELAND_TWITTER_CONSUMER_SECRET")
+	e.LoadEnv("PEOPLELAND_TWITTER_TOKEN")
+	e.LoadEnv("PEOPLELAND_TWITTER_TOKEN_SECRET")
+
 	_ = e.LoadFile("./app/user/configs")
 	_ = e.Read(&config)
 
