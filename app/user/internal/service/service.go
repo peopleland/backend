@@ -79,3 +79,24 @@ func (u *UserService) PutProfile(ctx context.Context, load *api.PutProfilePayLoa
 		Twitter: profile.Twitter,
 	}, nil
 }
+
+func (u *UserService) ConnectTwitter(ctx context.Context, load *api.ConnectTwitterPayLoad) (*api.UserProfile, error) {
+	jwtStr := ctx.Value("authorization").(string)
+	jwtMap, err := jwt.DecodeJwt(jwtStr, u.conf.JwtRsaPublicKeyPem)
+	if err != nil {
+		return nil, err
+	}
+	address := (*jwtMap)["address"].(string)
+
+	profile, err := u.uc.ConnectTwitter(ctx, address, load)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.UserProfile{
+		Address: profile.Address,
+		Discord: "",
+		Name:    profile.Name,
+		Twitter: profile.Twitter,
+	}, nil
+}

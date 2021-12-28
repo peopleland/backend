@@ -17,7 +17,9 @@ func initApp(conf *conf.Config, logger *log.Logger) (*http.Server, error) {
 		return nil, err
 	}
 	userRepo := data.NewUserRepo(d, logger)
-	userUseCase := biz.NewUserUseCase(userRepo, conf, logger)
+	twitterRepo := data.NewTwitterOauth1Repo(conf)
+
+	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, conf, logger)
 	userService := service.NewUserService(userUseCase, conf, logger)
 	lambdaServer := server.NewLambdaServer(conf, userService, logger)
 	return lambdaServer, nil
