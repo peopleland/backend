@@ -1,6 +1,6 @@
 [build]
   command = "make build"
-  publish = "swagger/"
+  publish = "website/"
 
 [functions]
   directory = "bin/"
