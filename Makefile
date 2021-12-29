@@ -18,6 +18,9 @@ lambda:
 		--proto_path=../../../third_party \
 		--go_out=paths=source_relative:. \
         --go-lambda_out=paths=source_relative,prefix=.netlify/functions:. \
+        --openapiv2_out ../../../website/swagger \
+        --openapiv2_opt logtostderr=true \
+        --openapiv2_opt json_names_for_fields=false \
 		$(USER_API_PROTO_FILES)
 
 test:
@@ -28,12 +31,4 @@ build-user:
 
 build-all: build-user
 
-publish:
-	mkdir -p swagger/ && cd $(USER_API_PATH) && protoc --proto_path=. \
-    	--proto_path=../../../third_party \
-    	--openapiv2_out ../../../swagger \
-        --openapiv2_opt logtostderr=true \
-        --openapiv2_opt json_names_for_fields=false \
-    	$(USER_API_PROTO_FILES)
-
-build: install init test build-all publish
+build: init test build-all

@@ -36,7 +36,5 @@ Thumbs.db
 .vscode/
 .idea
 *.swp
-swagger/
-pkg/protoc-gen-go-lambda/bin
 
 **/config.yaml
