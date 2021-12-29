@@ -6,7 +6,6 @@ import (
 	"backend/app/user/internal/conf"
 	"backend/pkg/jwt"
 	"context"
-	"fmt"
 	"log"
 )
 
@@ -29,16 +28,15 @@ func (u *UserService) Login(ctx context.Context, load *api.LoginPayLoad) (*api.L
 	if err != nil {
 		return nil, err
 	}
-	return &api.LoginResponse{Jwt: jwtStr}, nil
+	return &api.LoginResponse{Jwt: *jwtStr}, nil
 }
 
-func (u *UserService) GetProfile(ctx context.Context) (*api.UserProfile, error) {
+func (u *UserService) GetProfile(ctx context.Context, load *api.GetProfilePayLoad) (*api.UserProfile, error) {
 	jwtStr := ctx.Value("authorization").(string)
 	jwtMap, err := jwt.DecodeJwt(jwtStr, u.conf.JwtRsaPublicKeyPem)
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println(*jwtMap)
 	address := (*jwtMap)["address"].(string)
 	profile, err := u.uc.GetProfile(ctx, address)
 	if err != nil {
@@ -61,9 +59,6 @@ func (u *UserService) PutProfile(ctx context.Context, load *api.PutProfilePayLoa
 	address := (*jwtMap)["address"].(string)
 
 	updateData := map[string]string{}
-	if load.Twitter != "" {
-		updateData["twitter"] = load.Twitter
-	}
 	if load.Name != "" {
 		updateData["name"] = load.Name
 	}
@@ -99,4 +94,18 @@ func (u *UserService) ConnectTwitter(ctx context.Context, load *api.ConnectTwitt
 		Name:    profile.Name,
 		Twitter: profile.Twitter,
 	}, nil
+}
+
+func (u *UserService) ConnectTelegram(ctx context.Context, load *api.ConnectTelegramPayLoad) (*api.ConnectTelegramResponse, error) {
+	jwtStr := ctx.Value("authorization").(string)
+	jwtMap, err := jwt.DecodeJwt(jwtStr, u.conf.JwtRsaPublicKeyPem)
+	if err != nil {
+		return nil, err
+	}
+	userid := (*jwtMap)["userid"].(string)
+	code, err := u.uc.GetTelegramVerifyCode(ctx, userid)
+	if err != nil {
+		return nil, err
+	}
+	return &api.ConnectTelegramResponse{Code: code}, nil
 }

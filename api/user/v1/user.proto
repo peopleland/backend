@@ -1,0 +1,73 @@
+syntax = "proto3";
+
+package api.user.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "backend/api/user/v1;v1";
+
+service User {
+  rpc Login (LoginPayLoad) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/user/v1/login",
+      body: "*"
+    };
+  }
+  rpc GetProfile (GetProfilePayLoad) returns (UserProfile) {
+    option (google.api.http) = {
+      get: "/user/v1/profile",
+    };
+  }
+  rpc PutProfile (PutProfilePayLoad) returns (UserProfile) {
+    option (google.api.http) = {
+      put: "/user/v1/profile",
+      body: "*"
+    };
+  }
+  rpc ConnectTwitter (ConnectTwitterPayLoad) returns (UserProfile) {
+    option (google.api.http) = {
+      put: "/user/v1/connect/twitter",
+      body: "*"
+    };
+  }
+  rpc ConnectTelegram (ConnectTelegramPayLoad) returns (ConnectTelegramResponse) {
+    option (google.api.http) = {
+      put: "/user/v1/connect/telegram",
+      body: "*"
+    };
+  }
+}
+
+message UserProfile {
+  string id = 1;
+  string address = 2;
+  string name = 3;
+  string twitter = 4;
+  string telegram = 5;
+  string discord = 6;
+}
+
+message LoginPayLoad {
+  string address = 1;
+  string signature = 2;
+  string origin_message = 3;
+}
+
+message LoginResponse {
+  string jwt = 1;
+}
+
+message GetProfilePayLoad {}
+message PutProfilePayLoad {
+  string name = 1;
+  string address = 2;
+}
+
+message ConnectTwitterPayLoad {
+  string twitter = 1;
+}
+
+message ConnectTelegramPayLoad {}
+message ConnectTelegramResponse {
+  string code = 1;
+}

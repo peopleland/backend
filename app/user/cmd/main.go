@@ -47,7 +47,7 @@ func main() {
 		panic(err)
 	}
 
-	if config.Env == "dev" {
+	if config.Env == "local_dev" {
 		app.HttpStart(":8081")
 	} else {
 		app.LambdaStart()

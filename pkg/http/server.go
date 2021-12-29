@@ -59,12 +59,13 @@ func (s *Server) LambdaStart() {
 }
 
 func (s *Server) HttpStart(address string) {
+	for _, route := range s.Echo.Routes() {
+		log.Println(route.Name, route.Method, route.Path)
+	}
+
 	err := s.Start(address)
 	if err != nil {
 		return
-	}
-	for _, route := range s.Echo.Routes() {
-		log.Println(route.Name, route.Method, route.Path)
 	}
 }
 

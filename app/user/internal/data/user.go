@@ -3,6 +3,7 @@ package data
 import (
 	"backend/app/user/internal/biz"
 	"backend/app/user/internal/data/model"
+	"backend/app/user/pkg"
 	"context"
 	"log"
 
@@ -113,4 +114,54 @@ func (r *userRepo) UpdateUserByAddress(ctx context.Context, address string, upda
 		return nil, err
 	}
 	return &userdb, nil
+}
+
+func (r *userRepo) CreateTelegramVerifyCode(ctx context.Context, userid string) (*model.TelegramVerify, error) {
+	data := model.TelegramVerifyData{
+		Userid: userid,
+		Code:   pkg.RandomString(10),
+	}
+	result, err := r.data.faunaClient.
+		Query(
+			f.Create(
+				f.Collection(model.TelegramVerifyCollectionName),
+				f.Obj{"data": data}))
+	if err != nil {
+		return nil, err
+	}
+	var meta model.FaunadbCommon
+	err = model.ParseResult(result, &meta, &data)
+	if err != nil {
+		return nil, err
+	}
+	return &model.TelegramVerify{
+		FaunadbCommon:      meta,
+		TelegramVerifyData: data,
+	}, nil
+}
+
+func (r *userRepo) GetOrCreateTelegramVerifyCode(ctx context.Context, userid string) (dbData *model.TelegramVerify, err error) {
+	var existed bool
+	get, err := r.data.faunaClient.Query(f.Exists(f.MatchTerm(f.Index(model.TelegramVerifyByUserIdIndex), userid)))
+	if err != nil {
+		return nil, err
+	}
+	err = get.Get(&existed)
+	if err != nil {
+		return nil, err
+	}
+	if existed {
+		value, err := r.data.faunaClient.Query(f.Get(
+			f.MatchTerm(f.Index(model.TelegramVerifyByUserIdIndex), userid)))
+		if err != nil {
+			return nil, err
+		}
+		err = model.ParseResult(value, &dbData.FaunadbCommon, &dbData.TelegramVerifyData)
+		if err != nil {
+			return nil, err
+		}
+		return dbData, err
+	} else {
+		return r.CreateTelegramVerifyCode(ctx, userid)
+	}
 }
