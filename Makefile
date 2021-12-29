@@ -36,4 +36,4 @@ publish:
         --openapiv2_opt json_names_for_fields=false \
     	$(USER_API_PROTO_FILES)
 
-build: init test build-all publish
+build: install init test build-all publish
