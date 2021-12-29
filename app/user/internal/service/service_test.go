@@ -8,9 +8,10 @@ import (
 	"backend/app/user/internal/mock_biz"
 	"backend/pkg/jwt"
 	"context"
-	"github.com/golang/mock/gomock"
 	"log"
 	"testing"
+
+	"github.com/golang/mock/gomock"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -46,14 +47,14 @@ func TestUserService_Login(t *testing.T) {
 		wantErr string
 	}{
 		{"1", api.LoginPayLoad{
-			Address:       &addresOne,
-			Signature:     &signatureOne,
-			OriginMessage: &originMessage,
+			Address:       addresOne,
+			Signature:     signatureOne,
+			OriginMessage: originMessage,
 		}, ""},
 		{"2", api.LoginPayLoad{
-			Address:       &addresTwo,
-			Signature:     &signatureOne,
-			OriginMessage: &originMessage,
+			Address:       addresTwo,
+			Signature:     signatureOne,
+			OriginMessage: originMessage,
 		}, "request.verify.error"},
 	}
 	for _, tt := range tests {
@@ -81,7 +82,7 @@ func TestUserService_GetProfile(t *testing.T) {
 	}
 
 	address := "0x40fcc42c5a25945c02b19204d082a67591d30cf6"
-	claims := jwt.NewMapClaims(address)
+	claims := jwt.NewMapClaims("x", address)
 	exp := int64(86400)
 	jwtStr, err := jwt.EncodeJwt(claims, privateKeyPem, exp)
 	if err != nil {
@@ -96,7 +97,7 @@ func TestUserService_GetProfile(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := us.GetProfile(tt.args)
+			got, err := us.GetProfile(tt.args, &api.GetProfilePayLoad{})
 			assert.Empty(t, err)
 			assert.NotEmpty(t, got)
 		})
@@ -115,7 +116,7 @@ func TestUserService_PutProfile(t *testing.T) {
 	}
 
 	address := "0x40fcc42c5a25945c02b19204d082a67591d30cf6"
-	claims := jwt.NewMapClaims(address)
+	claims := jwt.NewMapClaims("x", address)
 	exp := int64(86400)
 	jwtStr, err := jwt.EncodeJwt(claims, privateKeyPem, exp)
 	if err != nil {
@@ -157,7 +158,7 @@ func TestUserService_ConnectTwitter(t *testing.T) {
 	}
 
 	address := "0x40fcc42c5a25945c02b19204d082a67591d30cf6"
-	claims := jwt.NewMapClaims(address)
+	claims := jwt.NewMapClaims("x", address)
 	exp := int64(86400)
 	jwtStr, err := jwt.EncodeJwt(claims, privateKeyPem, exp)
 	if err != nil {

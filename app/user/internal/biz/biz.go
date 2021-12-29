@@ -22,6 +22,8 @@ type UserRepo interface {
 	GetOneUserByAddress(ctx context.Context, address string) (*model.UserDb, error)
 	FindOrCreateUser(ctx context.Context, address string) (*model.UserDb, error)
 	UpdateUserByAddress(ctx context.Context, address string, updateData map[string]interface{}) (*model.UserDb, error)
+	CreateTelegramVerifyCode(ctx context.Context, userid string) (*model.TelegramVerify, error)
+	GetOrCreateTelegramVerifyCode(ctx context.Context, userid string) (*model.TelegramVerify, error)
 }
 
 type TwitterRepo interface {
@@ -45,18 +47,18 @@ func NewUserUseCase(repo UserRepo, twitterRepo TwitterRepo, conf *conf.Config, l
 }
 
 func (u *UserUseCase) GetJWT(ctx context.Context, load *v1.LoginPayLoad) (*string, error) {
-	verified := pkg.VerifyEip191Sig(*load.Address, *load.OriginMessage, *load.Signature)
+	verified := pkg.VerifyEip191Sig(load.Address, load.OriginMessage, load.Signature)
 	if !verified {
 		return nil, errors.New("request.verify.error")
 	}
-	address := strings.ToLower(*load.Address)
+	address := strings.ToLower(load.Address)
 
-	_, err := u.repo.FindOrCreateUser(ctx, address)
+	dbData, err := u.repo.FindOrCreateUser(ctx, address)
 	if err != nil {
 		return nil, errors.New("request.db.error")
 	}
 
-	claims := jwt.NewMapClaims(address)
+	claims := jwt.NewMapClaims(dbData.Ref.ID, address)
 	jwtStr, err := jwt.EncodeJwt(claims, u.conf.JwtRsaPrivateKeyPem, int64(86400))
 	if err != nil {
 		return nil, errors.New("request.jwt.error")
@@ -121,4 +123,12 @@ func (u *UserUseCase) ConnectTwitter(ctx context.Context, address string, load *
 		return nil, err
 	}
 	return profile, nil
+}
+
+func (u *UserUseCase) GetTelegramVerifyCode(ctx context.Context, userid string) (code string, err error) {
+	verifyCode, err := u.repo.GetOrCreateTelegramVerifyCode(ctx, userid)
+	if err != nil {
+		return
+	}
+	return verifyCode.Code, nil
 }

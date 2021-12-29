@@ -10,8 +10,8 @@ type MapClaims struct {
 	jwt.MapClaims
 }
 
-func NewMapClaims(address string) *MapClaims {
-	return &MapClaims{map[string]interface{}{"address": address}}
+func NewMapClaims(userid, address string) *MapClaims {
+	return &MapClaims{map[string]interface{}{"userid": userid, "address": address}}
 }
 
 func EncodeJwt(claims *MapClaims, privateKeyPemStr string, exp int64) (string, error) {
