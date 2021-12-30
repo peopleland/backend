@@ -13,10 +13,7 @@ type User struct {
 
 type TelegramVerify struct {
 	FaunadbCommon
-	TelegramVerifyData
-}
 
-type TelegramVerifyData struct {
 	Userid string `fauna:"userid" json:"userid"`
 	Code   string `fauna:"code" json:"code"`
 }

@@ -4,9 +4,10 @@ import (
 	"backend/app/user/internal/biz"
 	"backend/app/user/internal/conf"
 	"backend/app/user/internal/peopleland"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"math/big"
 )
 
 type PeopleLandContractRepo struct {
