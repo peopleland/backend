@@ -11,7 +11,7 @@ require (
 	github.com/dghubble/oauth1 v0.7.0
 	github.com/ethereum/go-ethereum v1.10.13
 	github.com/fauna/faunadb-go/v4 v4.1.0
-	github.com/go-playground/form/v4 v4.2.0 // indirect
+	github.com/go-playground/form/v4 v4.2.0
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/googleapis/google-cloud-go-testing v0.0.0-20210719221736-1c9a4c676720 // indirect

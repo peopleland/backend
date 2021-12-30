@@ -11,7 +11,7 @@ type TwitterRepo struct {
 	client *twitter.Client
 }
 
-func NewTwitterOauth1Repo(conf *conf.Config) biz.TwitterRepo {
+func NewTwitterRepo(conf *conf.Config) biz.TwitterRepo {
 	config := oauth1.NewConfig(conf.TwitterConsumerKey, conf.TwitterConsumerSecret)
 	token := oauth1.NewToken(conf.TwitterToken, conf.TwitterTokenSecret)
 	httpClient := config.Client(oauth1.NoContext, token)

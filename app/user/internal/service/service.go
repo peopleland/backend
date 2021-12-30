@@ -109,3 +109,19 @@ func (u *UserService) ConnectTelegram(ctx context.Context, load *api.ConnectTele
 	}
 	return &api.ConnectTelegramResponse{Code: code}, nil
 }
+
+func (u *UserService) GenVerifyCode(ctx context.Context, load *api.GenVerifyCodePayLoad) (*api.GenVerifyCodeResponse, error) {
+	jwtStr := ctx.Value("authorization").(string)
+	jwtMap, err := jwt.DecodeJwt(jwtStr, u.conf.JwtRsaPublicKeyPem)
+	if err != nil {
+		return nil, err
+	}
+
+	userid := (*jwtMap)["userid"].(string)
+	verifyCode, err := u.uc.GenVerifyCode(ctx, userid)
+	if err != nil {
+		return nil, err
+	}
+
+	return &api.GenVerifyCodeResponse{VerifyCode: verifyCode}, nil
+}

@@ -12,4 +12,7 @@ type Config struct {
 	TwitterConsumerSecret string `mapstructure:"PEOPLELAND_TWITTER_CONSUMER_SECRET"`
 	TwitterToken          string `mapstructure:"PEOPLELAND_TWITTER_TOKEN"`
 	TwitterTokenSecret    string `mapstructure:"PEOPLELAND_TWITTER_TOKEN_SECRET"`
+
+	EthClientRawUrl           string `mapstructure:"PEOPLELAND_ETH_CLIENT_RAW_URL"`
+	PeopleLandContractAddress string `mapstructure:"PEOPLELAND_CONTRACT_ADDRESS"`
 }
