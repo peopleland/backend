@@ -5,7 +5,9 @@ import (
 )
 
 const (
-	UserCollectionName           = "users"
+	UserCollectionName  = "users"
+	UsersByAddressIndex = "users_by_address"
+
 	TelegramVerifyCollectionName = "telegram_verify"
 	TelegramVerifyByUserIdIndex  = "telegram_verify_by_userid"
 )

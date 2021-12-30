@@ -5,6 +5,7 @@ import (
 	"backend/app/user/internal/data/model"
 	"backend/app/user/pkg"
 	"context"
+	"errors"
 	"log"
 
 	f "github.com/fauna/faunadb-go/v4/faunadb"
@@ -23,7 +24,36 @@ func NewUserRepo(data *Data, logger *log.Logger) biz.UserRepo {
 }
 
 func (r *userRepo) CreateUser(ctx context.Context, address string) (*model.UserDb, error) {
-	result, err := r.data.faunaClient.Query(f.Create(f.Collection("users"), f.Obj{"data": model.User{Address: address}}))
+	result, err := r.data.faunaClient.Query(f.Create(f.Collection(model.UserCollectionName), f.Obj{"data": map[string]string{
+		"address": address,
+	}}))
+	if err != nil {
+		return nil, err
+	}
+	var userdb model.UserDb
+	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
+	if err != nil {
+		return nil, err
+	}
+	err = result.At(f.ObjKey("data")).Get(&userdb.Data)
+	if err != nil {
+		return nil, err
+	}
+	err = result.At(f.ObjKey("ref")).Get(&userdb.Ref)
+	if err != nil {
+		return nil, err
+	}
+	return &userdb, nil
+}
+
+func (r *userRepo) GetUser(ctx context.Context, userid string) (*model.UserDb, error) {
+	result, err := r.data.faunaClient.Query(
+		f.Get(
+			f.Ref(
+				f.Collection(model.UserCollectionName),
+				userid,
+			),
+		))
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +77,7 @@ func (r *userRepo) GetOneUserByAddress(ctx context.Context, address string) (*mo
 	result, err := r.data.faunaClient.Query(
 		f.Get(
 			f.MatchTerm(
-				f.Index("users_by_address"),
+				f.Index(model.UsersByAddressIndex),
 				address,
 			),
 		))
@@ -84,10 +114,39 @@ func (r *userRepo) FindOrCreateUser(ctx context.Context, address string) (*model
 	return newUser, nil
 }
 
+func (r *userRepo) UpdateUser(ctx context.Context, userid string, updateData map[string]interface{}) (*model.UserDb, error) {
+	result, err := r.data.faunaClient.Query(
+		f.Update(
+			f.Ref(
+				f.Collection(model.UserCollectionName),
+				userid,
+			),
+			f.Obj{"data": updateData},
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+	var userdb model.UserDb
+	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
+	if err != nil {
+		return nil, err
+	}
+	err = result.At(f.ObjKey("data")).Get(&userdb.Data)
+	if err != nil {
+		return nil, err
+	}
+	err = result.At(f.ObjKey("ref")).Get(&userdb.Ref)
+	if err != nil {
+		return nil, err
+	}
+	return &userdb, nil
+}
+
 func (r *userRepo) UpdateUserByAddress(ctx context.Context, address string, updateData map[string]interface{}) (*model.UserDb, error) {
 	get := f.Get(
 		f.MatchTerm(
-			f.Index("users_by_address"),
+			f.Index(model.UsersByAddressIndex),
 			address,
 		),
 	)
@@ -164,4 +223,31 @@ func (r *userRepo) GetOrCreateTelegramVerifyCode(ctx context.Context, userid str
 	} else {
 		return r.CreateTelegramVerifyCode(ctx, userid)
 	}
+}
+
+func (r *userRepo) GenVerifyCode(ctx context.Context, userid string) (string, error) {
+	user, err := r.GetUser(ctx, userid)
+	if err != nil {
+		return "", err
+	}
+	if user.Data.VerifyCode != "" {
+		return user.Data.VerifyCode, nil
+	}
+
+	tryCount := 3
+	for true {
+		if tryCount <= 0 {
+			break
+		}
+		tryCount -= 1
+		newCode := pkg.RandomString(8)
+		newUser, err := r.UpdateUser(ctx, userid, map[string]interface{}{
+			"verify_code": newCode,
+		})
+		if err == nil {
+			return newUser.Data.VerifyCode, nil
+		}
+	}
+
+	return "", errors.New("verify_code.gen.error")
 }

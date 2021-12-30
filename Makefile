@@ -21,6 +21,7 @@ lambda:
         --openapiv2_out ../../../website/swagger \
         --openapiv2_opt logtostderr=true \
         --openapiv2_opt json_names_for_fields=false \
+        --openapiv2_opt disable_default_errors=true \
 		$(USER_API_PROTO_FILES)
 
 test:

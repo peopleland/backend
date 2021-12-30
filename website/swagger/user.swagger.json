@@ -25,12 +25,6 @@
             "schema": {
               "$ref": "#/definitions/v1ConnectTelegramResponse"
             }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
           }
         },
         "parameters": [
@@ -57,12 +51,6 @@
             "schema": {
               "$ref": "#/definitions/v1UserProfile"
             }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
           }
         },
         "parameters": [
@@ -80,6 +68,32 @@
         ]
       }
     },
+    "/user/v1/gen_verify_code": {
+      "put": {
+        "operationId": "User_GenVerifyCode",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GenVerifyCodeResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1GenVerifyCodePayLoad"
+            }
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
     "/user/v1/login": {
       "post": {
         "operationId": "User_Login",
@@ -88,12 +102,6 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1LoginResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -121,12 +129,6 @@
             "schema": {
               "$ref": "#/definitions/v1UserProfile"
             }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
           }
         },
         "tags": [
@@ -140,12 +142,6 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/v1UserProfile"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -166,33 +162,6 @@
     }
   },
   "definitions": {
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "@type": {
-          "type": "string"
-        }
-      },
-      "additionalProperties": {}
-    },
-    "rpcStatus": {
-      "type": "object",
-      "properties": {
-        "code": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "message": {
-          "type": "string"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/protobufAny"
-          }
-        }
-      }
-    },
     "v1ConnectTelegramPayLoad": {
       "type": "object"
     },
@@ -208,6 +177,17 @@
       "type": "object",
       "properties": {
         "twitter": {
+          "type": "string"
+        }
+      }
+    },
+    "v1GenVerifyCodePayLoad": {
+      "type": "object"
+    },
+    "v1GenVerifyCodeResponse": {
+      "type": "object",
+      "properties": {
+        "verify_code": {
           "type": "string"
         }
       }

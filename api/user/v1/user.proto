@@ -36,6 +36,12 @@ service User {
       body: "*"
     };
   }
+  rpc GenVerifyCode (GenVerifyCodePayLoad) returns (GenVerifyCodeResponse) {
+    option (google.api.http) = {
+      put: "/user/v1/gen_verify_code",
+      body: "*"
+    };
+  }
 }
 
 message UserProfile {
@@ -70,4 +76,9 @@ message ConnectTwitterPayLoad {
 message ConnectTelegramPayLoad {}
 message ConnectTelegramResponse {
   string code = 1;
+}
+
+message GenVerifyCodePayLoad {}
+message GenVerifyCodeResponse {
+  string verify_code = 1;
 }

@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"math/big"
 	"regexp"
 	"strings"
 )
@@ -19,30 +20,39 @@ const (
 
 type UserRepo interface {
 	CreateUser(ctx context.Context, address string) (*model.UserDb, error)
+	GetUser(ctx context.Context, userid string) (*model.UserDb, error)
 	GetOneUserByAddress(ctx context.Context, address string) (*model.UserDb, error)
 	FindOrCreateUser(ctx context.Context, address string) (*model.UserDb, error)
 	UpdateUserByAddress(ctx context.Context, address string, updateData map[string]interface{}) (*model.UserDb, error)
+	UpdateUser(ctx context.Context, userid string, updateData map[string]interface{}) (*model.UserDb, error)
 	CreateTelegramVerifyCode(ctx context.Context, userid string) (*model.TelegramVerify, error)
 	GetOrCreateTelegramVerifyCode(ctx context.Context, userid string) (*model.TelegramVerify, error)
+	GenVerifyCode(ctx context.Context, userid string) (string, error)
 }
 
 type TwitterRepo interface {
 	GetTwitterUserTimeline(userScreenName string) []string
 }
 
-type UserUseCase struct {
-	repo        UserRepo
-	twitterRepo TwitterRepo
-	logger      *log.Logger
-	conf        *conf.Config
+type PeopleLandContractRepo interface {
+	BalanceOf(address string) (*big.Int, error)
 }
 
-func NewUserUseCase(repo UserRepo, twitterRepo TwitterRepo, conf *conf.Config, logger *log.Logger) *UserUseCase {
+type UserUseCase struct {
+	repo                   UserRepo
+	twitterRepo            TwitterRepo
+	peopleLandContractRepo PeopleLandContractRepo
+	logger                 *log.Logger
+	conf                   *conf.Config
+}
+
+func NewUserUseCase(repo UserRepo, twitterRepo TwitterRepo, peopleLandContractRepo PeopleLandContractRepo, conf *conf.Config, logger *log.Logger) *UserUseCase {
 	return &UserUseCase{
-		repo:        repo,
-		twitterRepo: twitterRepo,
-		logger:      logger,
-		conf:        conf,
+		repo:                   repo,
+		twitterRepo:            twitterRepo,
+		peopleLandContractRepo: peopleLandContractRepo,
+		logger:                 logger,
+		conf:                   conf,
 	}
 }
 
@@ -131,4 +141,27 @@ func (u *UserUseCase) GetTelegramVerifyCode(ctx context.Context, userid string) 
 		return
 	}
 	return verifyCode.Code, nil
+}
+
+func (u *UserUseCase) GenVerifyCode(ctx context.Context, userid string) (verifyCode string, err error) {
+	user, err := u.repo.GetUser(ctx, userid)
+	if user.Data.VerifyCode != "" {
+		return user.Data.VerifyCode, nil
+	}
+
+	address := user.Data.Address
+	count, err := u.peopleLandContractRepo.BalanceOf(address)
+	if err != nil {
+		return "", errors.New("request.nft.error.unknown")
+	}
+	if count.Cmp(big.NewInt(0)) != 1 {
+		return "", errors.New("request.nft.error.none")
+	}
+
+	verifyCode, err = u.repo.GenVerifyCode(ctx, user.Ref.ID)
+	if err != nil {
+		return "", errors.New("request.gen.error")
+	}
+
+	return verifyCode, err
 }

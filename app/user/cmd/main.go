@@ -17,9 +17,10 @@ func initApp(conf *conf.Config, logger *log.Logger) (*http.Server, error) {
 		return nil, err
 	}
 	userRepo := data.NewUserRepo(d, logger)
-	twitterRepo := data.NewTwitterOauth1Repo(conf)
+	twitterRepo := data.NewTwitterRepo(conf)
+	peopleLandContractRepo := data.NewPeopleLandContractRepo(conf)
 
-	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, conf, logger)
+	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, conf, logger)
 	userService := service.NewUserService(userUseCase, conf, logger)
 	lambdaServer := server.NewLambdaServer(conf, userService, logger)
 	return lambdaServer, nil
@@ -37,6 +38,9 @@ func main() {
 	e.LoadEnv("PEOPLELAND_TWITTER_CONSUMER_SECRET")
 	e.LoadEnv("PEOPLELAND_TWITTER_TOKEN")
 	e.LoadEnv("PEOPLELAND_TWITTER_TOKEN_SECRET")
+
+	e.LoadEnv("PEOPLELAND_ETH_CLIENT_RAW_URL")
+	e.LoadEnv("PEOPLELAND_CONTRACT_ADDRESS")
 
 	_ = e.LoadFile("./app/user/configs")
 	_ = e.Read(&config)
