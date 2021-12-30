@@ -246,7 +246,7 @@ func TestUserService_GenVerifyCode(t *testing.T) {
 			})
 			got, err := us.GenVerifyCode(ctx, &tt.args)
 			user, _ = userRepo.GetOneUserByAddress(ctx, address)
-			assert.Equal(t, got.VerifyCode, user.Data.VerifyCode)
+			assert.Equal(t, got.VerifyCode, user.VerifyCode)
 			assert.Empty(t, err)
 		})
 	}

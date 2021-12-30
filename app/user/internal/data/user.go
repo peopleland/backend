@@ -23,19 +23,15 @@ func NewUserRepo(data *Data, logger *log.Logger) biz.UserRepo {
 	}
 }
 
-func (r *userRepo) CreateUser(ctx context.Context, address string) (*model.UserDb, error) {
+func (r *userRepo) CreateUser(ctx context.Context, address string) (*model.User, error) {
 	result, err := r.data.faunaClient.Query(f.Create(f.Collection(model.UserCollectionName), f.Obj{"data": map[string]string{
 		"address": address,
 	}}))
 	if err != nil {
 		return nil, err
 	}
-	var userdb model.UserDb
-	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("data")).Get(&userdb.Data)
+	var userdb model.User
+	err = result.At(f.ObjKey("data")).Get(&userdb)
 	if err != nil {
 		return nil, err
 	}
@@ -43,10 +39,14 @@ func (r *userRepo) CreateUser(ctx context.Context, address string) (*model.UserD
 	if err != nil {
 		return nil, err
 	}
+	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
+	if err != nil {
+		return nil, err
+	}
 	return &userdb, nil
 }
 
-func (r *userRepo) GetUser(ctx context.Context, userid string) (*model.UserDb, error) {
+func (r *userRepo) GetUser(ctx context.Context, userid string) (*model.User, error) {
 	result, err := r.data.faunaClient.Query(
 		f.Get(
 			f.Ref(
@@ -57,12 +57,8 @@ func (r *userRepo) GetUser(ctx context.Context, userid string) (*model.UserDb, e
 	if err != nil {
 		return nil, err
 	}
-	var userdb model.UserDb
-	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("data")).Get(&userdb.Data)
+	var userdb model.User
+	err = result.At(f.ObjKey("data")).Get(&userdb)
 	if err != nil {
 		return nil, err
 	}
@@ -70,10 +66,14 @@ func (r *userRepo) GetUser(ctx context.Context, userid string) (*model.UserDb, e
 	if err != nil {
 		return nil, err
 	}
+	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
+	if err != nil {
+		return nil, err
+	}
 	return &userdb, nil
 }
 
-func (r *userRepo) GetOneUserByAddress(ctx context.Context, address string) (*model.UserDb, error) {
+func (r *userRepo) GetOneUserByAddress(ctx context.Context, address string) (*model.User, error) {
 	result, err := r.data.faunaClient.Query(
 		f.Get(
 			f.MatchTerm(
@@ -85,12 +85,8 @@ func (r *userRepo) GetOneUserByAddress(ctx context.Context, address string) (*mo
 	if err != nil {
 		return nil, err
 	}
-	var userdb model.UserDb
-	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("data")).Get(&userdb.Data)
+	var userdb model.User
+	err = result.At(f.ObjKey("data")).Get(&userdb)
 	if err != nil {
 		return nil, err
 	}
@@ -98,10 +94,14 @@ func (r *userRepo) GetOneUserByAddress(ctx context.Context, address string) (*mo
 	if err != nil {
 		return nil, err
 	}
+	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
+	if err != nil {
+		return nil, err
+	}
 	return &userdb, nil
 }
 
-func (r *userRepo) FindOrCreateUser(ctx context.Context, address string) (*model.UserDb, error) {
+func (r *userRepo) FindOrCreateUser(ctx context.Context, address string) (*model.User, error) {
 	user, _ := r.GetOneUserByAddress(ctx, address)
 	if user != nil {
 		return user, nil
@@ -114,7 +114,7 @@ func (r *userRepo) FindOrCreateUser(ctx context.Context, address string) (*model
 	return newUser, nil
 }
 
-func (r *userRepo) UpdateUser(ctx context.Context, userid string, updateData map[string]interface{}) (*model.UserDb, error) {
+func (r *userRepo) UpdateUser(ctx context.Context, userid string, updateData map[string]interface{}) (*model.User, error) {
 	result, err := r.data.faunaClient.Query(
 		f.Update(
 			f.Ref(
@@ -127,12 +127,8 @@ func (r *userRepo) UpdateUser(ctx context.Context, userid string, updateData map
 	if err != nil {
 		return nil, err
 	}
-	var userdb model.UserDb
-	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("data")).Get(&userdb.Data)
+	var userdb model.User
+	err = result.At(f.ObjKey("data")).Get(&userdb)
 	if err != nil {
 		return nil, err
 	}
@@ -140,10 +136,14 @@ func (r *userRepo) UpdateUser(ctx context.Context, userid string, updateData map
 	if err != nil {
 		return nil, err
 	}
+	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
+	if err != nil {
+		return nil, err
+	}
 	return &userdb, nil
 }
 
-func (r *userRepo) UpdateUserByAddress(ctx context.Context, address string, updateData map[string]interface{}) (*model.UserDb, error) {
+func (r *userRepo) UpdateUserByAddress(ctx context.Context, address string, updateData map[string]interface{}) (*model.User, error) {
 	get := f.Get(
 		f.MatchTerm(
 			f.Index(model.UsersByAddressIndex),
@@ -159,16 +159,16 @@ func (r *userRepo) UpdateUserByAddress(ctx context.Context, address string, upda
 	if err != nil {
 		return nil, err
 	}
-	var userdb model.UserDb
-	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("data")).Get(&userdb.Data)
+	var userdb model.User
+	err = result.At(f.ObjKey("data")).Get(&userdb)
 	if err != nil {
 		return nil, err
 	}
 	err = result.At(f.ObjKey("ref")).Get(&userdb.Ref)
+	if err != nil {
+		return nil, err
+	}
+	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
 	if err != nil {
 		return nil, err
 	}
@@ -230,8 +230,8 @@ func (r *userRepo) GenVerifyCode(ctx context.Context, userid string) (string, er
 	if err != nil {
 		return "", err
 	}
-	if user.Data.VerifyCode != "" {
-		return user.Data.VerifyCode, nil
+	if user.VerifyCode != "" {
+		return user.VerifyCode, nil
 	}
 
 	tryCount := 3
@@ -245,7 +245,7 @@ func (r *userRepo) GenVerifyCode(ctx context.Context, userid string) (string, er
 			"verify_code": newCode,
 		})
 		if err == nil {
-			return newUser.Data.VerifyCode, nil
+			return newUser.VerifyCode, nil
 		}
 	}
 
