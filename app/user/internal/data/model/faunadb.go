@@ -12,15 +12,9 @@ const (
 	TelegramVerifyByUserIdIndex  = "telegram_verify_by_userid"
 )
 
-type UserDb struct {
-	Ref  f.RefV `fauna:"ref" json:"ref"`
-	Ts   int64  `fauna:"ts" json:"ts"`
-	Data User   `fauna:"data" json:"data"`
-}
-
 type FaunadbCommon struct {
-	Ref f.RefV `fauna:"_" json:"ref"`
-	Ts  int64  `fauna:"_" json:"ts"`
+	Ref f.RefV `fauna:"-" json:"ref"`
+	Ts  int64  `fauna:"-" json:"ts"`
 }
 
 func ParseResult(result f.Value, meta *FaunadbCommon, data interface{}) error {

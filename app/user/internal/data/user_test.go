@@ -35,7 +35,7 @@ func Test_userRepo_GetUser(t *testing.T) {
 	got, err := ur.GetUser(ctx, user.Ref.ID)
 	assert.Empty(t, err)
 	assert.Equal(t, got.Ref.ID, got.Ref.ID)
-	assert.Equal(t, got.Data.Address, got.Data.Address)
+	assert.Equal(t, got.Address, got.Address)
 }
 
 func Test_userRepo_GenVerifyCode(t *testing.T) {

@@ -19,12 +19,12 @@ const (
 )
 
 type UserRepo interface {
-	CreateUser(ctx context.Context, address string) (*model.UserDb, error)
-	GetUser(ctx context.Context, userid string) (*model.UserDb, error)
-	GetOneUserByAddress(ctx context.Context, address string) (*model.UserDb, error)
-	FindOrCreateUser(ctx context.Context, address string) (*model.UserDb, error)
-	UpdateUserByAddress(ctx context.Context, address string, updateData map[string]interface{}) (*model.UserDb, error)
-	UpdateUser(ctx context.Context, userid string, updateData map[string]interface{}) (*model.UserDb, error)
+	CreateUser(ctx context.Context, address string) (*model.User, error)
+	GetUser(ctx context.Context, userid string) (*model.User, error)
+	GetOneUserByAddress(ctx context.Context, address string) (*model.User, error)
+	FindOrCreateUser(ctx context.Context, address string) (*model.User, error)
+	UpdateUserByAddress(ctx context.Context, address string, updateData map[string]interface{}) (*model.User, error)
+	UpdateUser(ctx context.Context, userid string, updateData map[string]interface{}) (*model.User, error)
 	CreateTelegramVerifyCode(ctx context.Context, userid string) (*model.TelegramVerify, error)
 	GetOrCreateTelegramVerifyCode(ctx context.Context, userid string) (*model.TelegramVerify, error)
 	GenVerifyCode(ctx context.Context, userid string) (string, error)
@@ -81,7 +81,7 @@ func (u *UserUseCase) GetProfile(ctx context.Context, address string) (*model.Us
 	if err != nil {
 		return nil, err
 	}
-	return &userDb.Data, nil
+	return userDb, nil
 }
 
 func (u *UserUseCase) UpdateProfile(ctx context.Context, address string, updateData map[string]string) (*model.User, error) {
@@ -97,7 +97,7 @@ func (u *UserUseCase) UpdateProfile(ctx context.Context, address string, updateD
 		return nil, err
 	}
 
-	return &user.Data, nil
+	return user, nil
 }
 
 func (u *UserUseCase) ConnectTwitter(ctx context.Context, address string, load *v1.ConnectTwitterPayLoad) (*model.User, error) {
@@ -115,7 +115,7 @@ func (u *UserUseCase) ConnectTwitter(ctx context.Context, address string, load *
 		result := reg.FindAllStringSubmatch(text, -1)
 		if len(result) != 0 {
 			name := result[0][1]
-			if name == user.Data.Name {
+			if name == user.Name {
 				hasT = true
 			}
 		}
@@ -145,11 +145,11 @@ func (u *UserUseCase) GetTelegramVerifyCode(ctx context.Context, userid string) 
 
 func (u *UserUseCase) GenVerifyCode(ctx context.Context, userid string) (verifyCode string, err error) {
 	user, err := u.repo.GetUser(ctx, userid)
-	if user.Data.VerifyCode != "" {
-		return user.Data.VerifyCode, nil
+	if user.VerifyCode != "" {
+		return user.VerifyCode, nil
 	}
 
-	address := user.Data.Address
+	address := user.Address
 	count, err := u.peopleLandContractRepo.BalanceOf(address)
 	if err != nil {
 		return "", errors.New("request.nft.error.unknown")
