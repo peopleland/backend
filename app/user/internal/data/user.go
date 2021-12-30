@@ -31,15 +31,7 @@ func (r *userRepo) CreateUser(ctx context.Context, address string) (*model.User,
 		return nil, err
 	}
 	var userdb model.User
-	err = result.At(f.ObjKey("data")).Get(&userdb)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("ref")).Get(&userdb.Ref)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
+	err = model.ParseResult(result, &userdb)
 	if err != nil {
 		return nil, err
 	}
@@ -58,15 +50,7 @@ func (r *userRepo) GetUser(ctx context.Context, userid string) (*model.User, err
 		return nil, err
 	}
 	var userdb model.User
-	err = result.At(f.ObjKey("data")).Get(&userdb)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("ref")).Get(&userdb.Ref)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
+	err = model.ParseResult(result, &userdb)
 	if err != nil {
 		return nil, err
 	}
@@ -86,15 +70,7 @@ func (r *userRepo) GetOneUserByAddress(ctx context.Context, address string) (*mo
 		return nil, err
 	}
 	var userdb model.User
-	err = result.At(f.ObjKey("data")).Get(&userdb)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("ref")).Get(&userdb.Ref)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
+	err = model.ParseResult(result, &userdb)
 	if err != nil {
 		return nil, err
 	}
@@ -128,15 +104,7 @@ func (r *userRepo) UpdateUser(ctx context.Context, userid string, updateData map
 		return nil, err
 	}
 	var userdb model.User
-	err = result.At(f.ObjKey("data")).Get(&userdb)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("ref")).Get(&userdb.Ref)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
+	err = model.ParseResult(result, &userdb)
 	if err != nil {
 		return nil, err
 	}
@@ -160,15 +128,7 @@ func (r *userRepo) UpdateUserByAddress(ctx context.Context, address string, upda
 		return nil, err
 	}
 	var userdb model.User
-	err = result.At(f.ObjKey("data")).Get(&userdb)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("ref")).Get(&userdb.Ref)
-	if err != nil {
-		return nil, err
-	}
-	err = result.At(f.ObjKey("ts")).Get(&userdb.Ts)
+	err = model.ParseResult(result, &userdb)
 	if err != nil {
 		return nil, err
 	}
@@ -176,7 +136,7 @@ func (r *userRepo) UpdateUserByAddress(ctx context.Context, address string, upda
 }
 
 func (r *userRepo) CreateTelegramVerifyCode(ctx context.Context, userid string) (*model.TelegramVerify, error) {
-	data := model.TelegramVerifyData{
+	data := model.TelegramVerify{
 		Userid: userid,
 		Code:   pkg.RandomString(10),
 	}
@@ -188,15 +148,11 @@ func (r *userRepo) CreateTelegramVerifyCode(ctx context.Context, userid string) 
 	if err != nil {
 		return nil, err
 	}
-	var meta model.FaunadbCommon
-	err = model.ParseResult(result, &meta, &data)
+	err = model.ParseResult(result, &data)
 	if err != nil {
 		return nil, err
 	}
-	return &model.TelegramVerify{
-		FaunadbCommon:      meta,
-		TelegramVerifyData: data,
-	}, nil
+	return &data, nil
 }
 
 func (r *userRepo) GetOrCreateTelegramVerifyCode(ctx context.Context, userid string) (dbData *model.TelegramVerify, err error) {
@@ -215,7 +171,7 @@ func (r *userRepo) GetOrCreateTelegramVerifyCode(ctx context.Context, userid str
 		if err != nil {
 			return nil, err
 		}
-		err = model.ParseResult(value, &dbData.FaunadbCommon, &dbData.TelegramVerifyData)
+		err = model.ParseResult(value, &dbData)
 		if err != nil {
 			return nil, err
 		}
