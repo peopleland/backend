@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"regexp"
 
 	f "github.com/fauna/faunadb-go/v4/faunadb"
 )
@@ -65,7 +66,6 @@ func (r *userRepo) GetOneUserByAddress(ctx context.Context, address string) (*mo
 				address,
 			),
 		))
-
 	if err != nil {
 		return nil, err
 	}
@@ -78,9 +78,14 @@ func (r *userRepo) GetOneUserByAddress(ctx context.Context, address string) (*mo
 }
 
 func (r *userRepo) FindOrCreateUser(ctx context.Context, address string) (*model.User, error) {
-	user, _ := r.GetOneUserByAddress(ctx, address)
+	user, err := r.GetOneUserByAddress(ctx, address)
 	if user != nil {
 		return user, nil
+	}
+
+	_, ok := err.(f.NotFound)
+	if !ok {
+		return nil, err
 	}
 
 	newUser, err := r.CreateUser(ctx, address)
@@ -124,7 +129,15 @@ func (r *userRepo) UpdateUserByAddress(ctx context.Context, address string, upda
 			f.Obj{"data": updateData},
 		),
 	)
+
 	if err != nil {
+		err1, ok := err.(f.BadRequest)
+		if ok {
+			has, _ := regexp.MatchString("document is not unique", err1.Error())
+			if has {
+				return nil, errors.New("db.document.not_unique")
+			}
+		}
 		return nil, err
 	}
 	var userdb model.User

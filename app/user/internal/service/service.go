@@ -6,6 +6,7 @@ import (
 	"backend/app/user/internal/conf"
 	"backend/pkg/jwt"
 	"context"
+	"errors"
 	"log"
 )
 
@@ -23,6 +24,23 @@ func NewUserService(uc *biz.UserUseCase, conf *conf.Config, logger *log.Logger) 
 	}
 }
 
+// 暂时这些写，后续抽取成 Middleware
+func parseAuthorization(ctx context.Context, conf *conf.Config) (address string, userid string, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = errors.New("unauthorized")
+		}
+	}()
+	jwtStr := ctx.Value("authorization").(string)
+	jwtMap, err := jwt.DecodeJwt(jwtStr, conf.JwtRsaPublicKeyPem)
+	if err != nil {
+		panic(err)
+	}
+	address = (*jwtMap)["address"].(string)
+	userid = (*jwtMap)["userid"].(string)
+	return address, userid, err
+}
+
 func (u *UserService) Login(ctx context.Context, load *api.LoginPayLoad) (*api.LoginResponse, error) {
 	jwtStr, err := u.uc.GetJWT(ctx, load)
 	if err != nil {
@@ -32,12 +50,10 @@ func (u *UserService) Login(ctx context.Context, load *api.LoginPayLoad) (*api.L
 }
 
 func (u *UserService) GetProfile(ctx context.Context, load *api.GetProfilePayLoad) (*api.UserProfile, error) {
-	jwtStr := ctx.Value("authorization").(string)
-	jwtMap, err := jwt.DecodeJwt(jwtStr, u.conf.JwtRsaPublicKeyPem)
+	address, _, err := parseAuthorization(ctx, u.conf)
 	if err != nil {
 		return nil, err
 	}
-	address := (*jwtMap)["address"].(string)
 	profile, err := u.uc.GetProfile(ctx, address)
 	if err != nil {
 		return nil, err
@@ -51,12 +67,10 @@ func (u *UserService) GetProfile(ctx context.Context, load *api.GetProfilePayLoa
 }
 
 func (u *UserService) PutProfile(ctx context.Context, load *api.PutProfilePayLoad) (*api.UserProfile, error) {
-	jwtStr := ctx.Value("authorization").(string)
-	jwtMap, err := jwt.DecodeJwt(jwtStr, u.conf.JwtRsaPublicKeyPem)
+	address, _, err := parseAuthorization(ctx, u.conf)
 	if err != nil {
 		return nil, err
 	}
-	address := (*jwtMap)["address"].(string)
 
 	updateData := map[string]string{}
 	if load.Name != "" {
@@ -76,12 +90,10 @@ func (u *UserService) PutProfile(ctx context.Context, load *api.PutProfilePayLoa
 }
 
 func (u *UserService) ConnectTwitter(ctx context.Context, load *api.ConnectTwitterPayLoad) (*api.UserProfile, error) {
-	jwtStr := ctx.Value("authorization").(string)
-	jwtMap, err := jwt.DecodeJwt(jwtStr, u.conf.JwtRsaPublicKeyPem)
+	address, _, err := parseAuthorization(ctx, u.conf)
 	if err != nil {
 		return nil, err
 	}
-	address := (*jwtMap)["address"].(string)
 
 	profile, err := u.uc.ConnectTwitter(ctx, address, load)
 	if err != nil {
@@ -97,12 +109,11 @@ func (u *UserService) ConnectTwitter(ctx context.Context, load *api.ConnectTwitt
 }
 
 func (u *UserService) ConnectTelegram(ctx context.Context, load *api.ConnectTelegramPayLoad) (*api.ConnectTelegramResponse, error) {
-	jwtStr := ctx.Value("authorization").(string)
-	jwtMap, err := jwt.DecodeJwt(jwtStr, u.conf.JwtRsaPublicKeyPem)
+	_, userid, err := parseAuthorization(ctx, u.conf)
 	if err != nil {
 		return nil, err
 	}
-	userid := (*jwtMap)["userid"].(string)
+
 	code, err := u.uc.GetTelegramVerifyCode(ctx, userid)
 	if err != nil {
 		return nil, err
@@ -111,13 +122,11 @@ func (u *UserService) ConnectTelegram(ctx context.Context, load *api.ConnectTele
 }
 
 func (u *UserService) GenVerifyCode(ctx context.Context, load *api.GenVerifyCodePayLoad) (*api.GenVerifyCodeResponse, error) {
-	jwtStr := ctx.Value("authorization").(string)
-	jwtMap, err := jwt.DecodeJwt(jwtStr, u.conf.JwtRsaPublicKeyPem)
+	_, userid, err := parseAuthorization(ctx, u.conf)
 	if err != nil {
 		return nil, err
 	}
 
-	userid := (*jwtMap)["userid"].(string)
 	verifyCode, err := u.uc.GenVerifyCode(ctx, userid)
 	if err != nil {
 		return nil, err
