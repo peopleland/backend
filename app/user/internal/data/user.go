@@ -65,7 +65,6 @@ func (r *userRepo) GetOneUserByAddress(ctx context.Context, address string) (*mo
 				address,
 			),
 		))
-
 	if err != nil {
 		return nil, err
 	}
@@ -78,9 +77,14 @@ func (r *userRepo) GetOneUserByAddress(ctx context.Context, address string) (*mo
 }
 
 func (r *userRepo) FindOrCreateUser(ctx context.Context, address string) (*model.User, error) {
-	user, _ := r.GetOneUserByAddress(ctx, address)
+	user, err := r.GetOneUserByAddress(ctx, address)
 	if user != nil {
 		return user, nil
+	}
+
+	_, ok := err.(f.NotFound)
+	if !ok {
+		return nil, err
 	}
 
 	newUser, err := r.CreateUser(ctx, address)
