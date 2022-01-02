@@ -120,6 +120,32 @@
         ]
       }
     },
+    "/user/v1/opener_game/mint_record": {
+      "post": {
+        "operationId": "User_OpenerGameMintRecord",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1OpenerGameMintRecordResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1OpenerGameMintRecordPayLoad"
+            }
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
     "/user/v1/profile": {
       "get": {
         "operationId": "User_GetProfile",
@@ -210,6 +236,40 @@
       "type": "object",
       "properties": {
         "jwt": {
+          "type": "string"
+        }
+      }
+    },
+    "v1OpenerGameMintRecordPayLoad": {
+      "type": "object",
+      "properties": {
+        "mintAddress": {
+          "type": "string"
+        },
+        "x": {
+          "type": "string"
+        },
+        "y": {
+          "type": "string"
+        },
+        "verify_code": {
+          "type": "string"
+        }
+      }
+    },
+    "v1OpenerGameMintRecordResponse": {
+      "type": "object",
+      "properties": {
+        "mintAddress": {
+          "type": "string"
+        },
+        "x": {
+          "type": "string"
+        },
+        "y": {
+          "type": "string"
+        },
+        "invited_userid": {
           "type": "string"
         }
       }

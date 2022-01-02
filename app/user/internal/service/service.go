@@ -12,13 +12,15 @@ import (
 
 type UserService struct {
 	uc     *biz.UserUseCase
+	ogc    *biz.OpenerGameCase
 	logger *log.Logger
 	conf   *conf.Config
 }
 
-func NewUserService(uc *biz.UserUseCase, conf *conf.Config, logger *log.Logger) *UserService {
+func NewUserService(uc *biz.UserUseCase, ogc *biz.OpenerGameCase, conf *conf.Config, logger *log.Logger) *UserService {
 	return &UserService{
 		uc:     uc,
+		ogc:    ogc,
 		logger: logger,
 		conf:   conf,
 	}
@@ -133,4 +135,17 @@ func (u *UserService) GenVerifyCode(ctx context.Context, load *api.GenVerifyCode
 	}
 
 	return &api.GenVerifyCodeResponse{VerifyCode: verifyCode}, nil
+}
+
+func (u *UserService) OpenerGameMintRecord(ctx context.Context, load *api.OpenerGameMintRecordPayLoad) (*api.OpenerGameMintRecordResponse, error) {
+	mintRecord, err := u.ogc.CreateMintRecord(ctx, load.MintAddress, load.X, load.Y, load.VerifyCode)
+	if err != nil {
+		return nil, err
+	}
+	return &api.OpenerGameMintRecordResponse{
+		MintAddress:   mintRecord.MintAddress,
+		X:             mintRecord.X,
+		Y:             mintRecord.Y,
+		InvitedUserid: mintRecord.InviteUserid,
+	}, nil
 }

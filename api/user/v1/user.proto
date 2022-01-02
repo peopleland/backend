@@ -42,6 +42,12 @@ service User {
       body: "*"
     };
   }
+  rpc OpenerGameMintRecord (OpenerGameMintRecordPayLoad) returns (OpenerGameMintRecordResponse) {
+    option (google.api.http) = {
+      post: "/user/v1/opener_game/mint_record",
+      body: "*"
+    };
+  }
 }
 
 message UserProfile {
@@ -81,4 +87,18 @@ message ConnectTelegramResponse {
 message GenVerifyCodePayLoad {}
 message GenVerifyCodeResponse {
   string verify_code = 1;
+}
+
+message OpenerGameMintRecordPayLoad {
+  string mintAddress = 1;
+  string x = 2;
+  string y = 3;
+  string verify_code = 4;
+}
+
+message OpenerGameMintRecordResponse {
+  string mintAddress = 1;
+  string x = 2;
+  string y = 3;
+  string invited_userid = 4;
 }

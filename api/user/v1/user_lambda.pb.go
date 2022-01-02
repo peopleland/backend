@@ -23,6 +23,7 @@ type UserLambdaServer interface {
 	GenVerifyCode(context.Context, *GenVerifyCodePayLoad) (*GenVerifyCodeResponse, error)
 	GetProfile(context.Context, *GetProfilePayLoad) (*UserProfile, error)
 	Login(context.Context, *LoginPayLoad) (*LoginResponse, error)
+	OpenerGameMintRecord(context.Context, *OpenerGameMintRecordPayLoad) (*OpenerGameMintRecordResponse, error)
 	PutProfile(context.Context, *PutProfilePayLoad) (*UserProfile, error)
 }
 
@@ -34,6 +35,7 @@ func RegisterUserLambdaServer(s *http.Server, srv UserLambdaServer) {
 	g.PUTX("/user/v1/connect/twitter", _User_ConnectTwitter0_Lambda_Handler(srv))
 	g.PUTX("/user/v1/connect/telegram", _User_ConnectTelegram0_Lambda_Handler(srv))
 	g.PUTX("/user/v1/gen_verify_code", _User_GenVerifyCode0_Lambda_Handler(srv))
+	g.POSTX("/user/v1/opener_game/mint_record", _User_OpenerGameMintRecord0_Lambda_Handler(srv))
 }
 
 func _User_Login0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Context) error {
@@ -192,6 +194,32 @@ func _User_GenVerifyCode0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Con
 	}
 }
 
+func _User_OpenerGameMintRecord0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in OpenerGameMintRecordPayLoad
+		if err := ctx.Bind(&in); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//http.SetOperation(ctx,"/api.user.v1.User/OpenerGameMintRecord")
+		//h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		//	return srv.OpenerGameMintRecord(ctx, req.(*OpenerGameMintRecordPayLoad))
+		//})
+		//out, err := h(ctx, &in)
+		out, err := srv.OpenerGameMintRecord(ctx.Ctx, &in)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//reply := out.(*OpenerGameMintRecordResponse)
+		return ctx.JSON(http.StatusOK, map[string]interface{}{
+			"data": out,
+		})
+	}
+}
+
 //
 //type UserLambdaClient interface {
 //
@@ -204,6 +232,8 @@ func _User_GenVerifyCode0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Con
 //	GetProfile(ctx context.Context, req *GetProfilePayLoad, opts ...http.CallOption) (rsp *UserProfile, err error)
 //
 //	Login(ctx context.Context, req *LoginPayLoad, opts ...http.CallOption) (rsp *LoginResponse, err error)
+//
+//	OpenerGameMintRecord(ctx context.Context, req *OpenerGameMintRecordPayLoad, opts ...http.CallOption) (rsp *OpenerGameMintRecordResponse, err error)
 //
 //	PutProfile(ctx context.Context, req *PutProfilePayLoad, opts ...http.CallOption) (rsp *UserProfile, err error)
 //
@@ -275,6 +305,19 @@ func _User_GenVerifyCode0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Con
 //	pattern := "/user/v1/login"
 //	path := binding.EncodeURL(pattern, in, false)
 //	opts = append(opts, http.Operation("/api.user.v1.User/Login"))
+//	opts = append(opts, http.PathTemplate(pattern))
+//	//	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+//	//	if err != nil {
+//		return nil, err
+//	}
+//	return &out, err
+//}
+//
+//func (c *UserLambdaClientImpl) OpenerGameMintRecord(ctx context.Context, in *OpenerGameMintRecordPayLoad, opts ...http.CallOption) (*OpenerGameMintRecordResponse, error) {
+//	var out OpenerGameMintRecordResponse
+//	pattern := "/user/v1/opener_game/mint_record"
+//	path := binding.EncodeURL(pattern, in, false)
+//	opts = append(opts, http.Operation("/api.user.v1.User/OpenerGameMintRecord"))
 //	opts = append(opts, http.PathTemplate(pattern))
 //	//	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 //	//	if err != nil {

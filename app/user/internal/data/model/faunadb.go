@@ -8,11 +8,15 @@ import (
 )
 
 const (
-	UserCollectionName  = "users"
-	UsersByAddressIndex = "users_by_address"
+	UserCollectionName     = "users"
+	UsersByAddressIndex    = "users_by_address"
+	UsersByVerifyCodeIndex = "users_by_verify_code"
 
 	TelegramVerifyCollectionName = "telegram_verify"
 	TelegramVerifyByUserIdIndex  = "telegram_verify_by_userid"
+
+	MintRecordCollectionName                        = "mint_records"
+	MintRecordsByMintAddressAndXAndYSortTsDescIndex = "mint_records_by_mint_address_and_x_and_y_sort_ts_desc"
 )
 
 type FaunadbCommon struct {

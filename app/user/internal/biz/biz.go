@@ -28,6 +28,7 @@ type UserRepo interface {
 	CreateTelegramVerifyCode(ctx context.Context, userid string) (*model.TelegramVerify, error)
 	GetOrCreateTelegramVerifyCode(ctx context.Context, userid string) (*model.TelegramVerify, error)
 	GenVerifyCode(ctx context.Context, userid string) (string, error)
+	GetUserByVerifyCode(ctx context.Context, verifyCode string) (*model.User, error)
 }
 
 type TwitterRepo interface {
@@ -36,6 +37,11 @@ type TwitterRepo interface {
 
 type PeopleLandContractRepo interface {
 	BalanceOf(address string) (*big.Int, error)
+}
+
+type MintRecordRepo interface {
+	CreateMintRecord(ctx context.Context, mintAddress string, x string, y string, userid string) (*model.MintRecord, error)
+	FindLastMintRecord(_ context.Context, mintAddress string, x string, y string, mintTimestamp int64) (*model.MintRecord, error)
 }
 
 type UserUseCase struct {
@@ -164,4 +170,45 @@ func (u *UserUseCase) GenVerifyCode(ctx context.Context, userid string) (verifyC
 	}
 
 	return verifyCode, err
+}
+
+type OpenerGameCase struct {
+	userRepo       UserRepo
+	mintRecordRepo MintRecordRepo
+	logger         *log.Logger
+	conf           *conf.Config
+}
+
+func NewOpenerGameCase(userRepo UserRepo, mintRecordRepo MintRecordRepo, conf *conf.Config, logger *log.Logger) *OpenerGameCase {
+	return &OpenerGameCase{
+		userRepo:       userRepo,
+		mintRecordRepo: mintRecordRepo,
+		logger:         logger,
+		conf:           conf,
+	}
+}
+
+func (ogc *OpenerGameCase) CreateMintRecord(ctx context.Context, mintAddress string, x string, y string, verifyCode string) (*model.MintRecord, error) {
+	user, err := ogc.userRepo.GetUserByVerifyCode(ctx, verifyCode)
+	if err != nil {
+		return nil, err
+	}
+	mintRecord, err := ogc.mintRecordRepo.CreateMintRecord(ctx, mintAddress, x, y, user.Ref.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return mintRecord, nil
+}
+
+func (ogc *OpenerGameCase) FindInvitedUser(ctx context.Context, mintAddress string, x string, y string, mintTimestamp int64) (*model.User, error) {
+	mr, err := ogc.mintRecordRepo.FindLastMintRecord(ctx, mintAddress, x, y, mintTimestamp)
+	if err != nil || mr == nil {
+		return nil, nil
+	}
+	user, err := ogc.userRepo.GetUser(ctx, mr.InviteUserid)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
 }

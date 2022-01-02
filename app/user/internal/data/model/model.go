@@ -17,3 +17,12 @@ type TelegramVerify struct {
 	Userid string `fauna:"userid" json:"userid"`
 	Code   string `fauna:"code" json:"code"`
 }
+
+type MintRecord struct {
+	FaunadbCommon
+
+	MintAddress  string `fauna:"mint_address" json:"mint_address"`
+	X            string `fauna:"x" json:"x"`
+	Y            string `fauna:"y" json:"y"`
+	InviteUserid string `fauna:"invited_userid" json:"invited_userid"`
+}

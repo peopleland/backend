@@ -19,9 +19,12 @@ func initApp(conf *conf.Config, logger *log.Logger) (*http.Server, error) {
 	userRepo := data.NewUserRepo(d, logger)
 	twitterRepo := data.NewTwitterRepo(conf)
 	peopleLandContractRepo := data.NewPeopleLandContractRepo(conf)
+	mintRecordRepo := data.NewMintRecordRepo(d, logger)
 
 	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, conf, logger)
-	userService := service.NewUserService(userUseCase, conf, logger)
+	mintRecordCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, conf, logger)
+	
+	userService := service.NewUserService(userUseCase, mintRecordCase, conf, logger)
 	lambdaServer := server.NewLambdaServer(conf, userService, logger)
 	return lambdaServer, nil
 }

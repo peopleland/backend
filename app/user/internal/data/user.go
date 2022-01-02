@@ -220,3 +220,22 @@ func (r *userRepo) GenVerifyCode(ctx context.Context, userid string) (string, er
 
 	return "", errors.New("verify_code.gen.error")
 }
+
+func (r *userRepo) GetUserByVerifyCode(_ context.Context, verifyCode string) (*model.User, error) {
+	result, err := r.data.faunaClient.Query(
+		f.Get(
+			f.MatchTerm(
+				f.Index(model.UsersByVerifyCodeIndex),
+				verifyCode,
+			),
+		))
+	if err != nil {
+		return nil, err
+	}
+	var userdb model.User
+	err = model.ParseResult(result, &userdb)
+	if err != nil {
+		return nil, err
+	}
+	return &userdb, nil
+}
