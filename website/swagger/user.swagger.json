@@ -146,6 +146,45 @@
         ]
       }
     },
+    "/user/v1/opener_game/opener_records": {
+      "get": {
+        "operationId": "User_OpenerGameOpenerRecordList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1OpenerGameOpenerRecordListResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "afterTokenId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "beforeTokenId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
     "/user/v1/profile": {
       "get": {
         "operationId": "User_GetProfile",
@@ -270,6 +309,46 @@
           "type": "string"
         },
         "invited_userid": {
+          "type": "string"
+        }
+      }
+    },
+    "v1OpenerGameOpenerRecordListResponse": {
+      "type": "object",
+      "properties": {
+        "opener_records": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1OpenerRecord"
+          }
+        }
+      }
+    },
+    "v1OpenerRecord": {
+      "type": "object",
+      "properties": {
+        "mint_address": {
+          "type": "string"
+        },
+        "token_id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "x": {
+          "type": "string"
+        },
+        "y": {
+          "type": "string"
+        },
+        "block_number": {
+          "type": "string",
+          "format": "int64"
+        },
+        "block_timestamp": {
+          "type": "string",
+          "format": "int64"
+        },
+        "invited_address": {
           "type": "string"
         }
       }

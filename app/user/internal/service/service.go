@@ -149,3 +149,37 @@ func (u *UserService) OpenerGameMintRecord(ctx context.Context, load *api.Opener
 		InvitedUserid: mintRecord.InviteUserid,
 	}, nil
 }
+
+func (u *UserService) OpenerGameOpenerRecordList(ctx context.Context, load *api.OpenerGameOpenerRecordListPayLoad) (*api.OpenerGameOpenerRecordListResponse, error) {
+	var pageSize int64 = 1000
+	var afterTokenId int64 = 0
+	var beforeTokenId int64 = 0
+	if load.PageSize != nil {
+		pageSize = *load.PageSize
+	}
+	if load.AfterTokenId != nil {
+		afterTokenId = *load.AfterTokenId
+	}
+	if load.BeforeTokenId != nil {
+		beforeTokenId = *load.BeforeTokenId
+	}
+	list, err := u.ogc.GetOpenerRecordList(ctx, pageSize, afterTokenId, beforeTokenId)
+	if err != nil {
+		return nil, err
+	}
+
+	openerRecords := make([]*api.OpenerRecord, 0)
+	for _, item := range list {
+		openerRecords = append(openerRecords, &api.OpenerRecord{
+			MintAddress:    item.MintAddress,
+			TokenId:        item.TokenId,
+			X:              item.X,
+			Y:              item.Y,
+			BlockNumber:    item.BlockNumber,
+			BlockTimestamp: item.BlockTimestamp,
+			InvitedAddress: item.InvitedAddress,
+		})
+	}
+
+	return &api.OpenerGameOpenerRecordListResponse{OpenerRecords: openerRecords}, nil
+}

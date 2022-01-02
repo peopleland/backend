@@ -17,6 +17,10 @@ const (
 
 	MintRecordCollectionName                        = "mint_records"
 	MintRecordsByMintAddressAndXAndYSortTsDescIndex = "mint_records_by_mint_address_and_x_and_y_sort_ts_desc"
+
+	OpenerRecordCollectionName       = "opener_records"
+	OpenerRecordSortTokenIdDescIndex = "opener_records_sort_token_id_desc"
+	OpenerRecordByTokenId            = "opener_records_by_token_id"
 )
 
 type FaunadbCommon struct {

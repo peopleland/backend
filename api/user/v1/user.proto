@@ -48,6 +48,11 @@ service User {
       body: "*"
     };
   }
+  rpc OpenerGameOpenerRecordList (OpenerGameOpenerRecordListPayLoad) returns (OpenerGameOpenerRecordListResponse) {
+    option (google.api.http) = {
+      get: "/user/v1/opener_game/opener_records"
+    };
+  }
 }
 
 message UserProfile {
@@ -101,4 +106,24 @@ message OpenerGameMintRecordResponse {
   string x = 2;
   string y = 3;
   string invited_userid = 4;
+}
+
+message OpenerGameOpenerRecordListPayLoad {
+  optional int64 pageSize = 1;
+  optional int64 afterTokenId = 2;
+  optional int64 beforeTokenId = 3;
+}
+
+message OpenerGameOpenerRecordListResponse {
+  repeated OpenerRecord opener_records = 1;
+}
+
+message OpenerRecord {
+  string mint_address = 1;
+  int64  token_id = 2;
+  string x = 3;
+  string y = 4;
+  int64 block_number = 5;
+  int64 block_timestamp = 6;
+  string invited_address = 7;
 }

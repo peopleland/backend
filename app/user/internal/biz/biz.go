@@ -41,7 +41,13 @@ type PeopleLandContractRepo interface {
 
 type MintRecordRepo interface {
 	CreateMintRecord(ctx context.Context, mintAddress string, x string, y string, userid string) (*model.MintRecord, error)
-	FindLastMintRecord(_ context.Context, mintAddress string, x string, y string, mintTimestamp int64) (*model.MintRecord, error)
+	FindLastMintRecord(ctx context.Context, mintAddress string, x string, y string, mintTimestamp int64) (*model.MintRecord, error)
+}
+
+type OpenerRecordRepo interface {
+	GetListPaginateFirstPage(ctx context.Context, pageSize int64) ([]*model.OpenerRecord, error)
+	GetListPaginateAfter(ctx context.Context, pageSize int64, afterTokenId int64) ([]*model.OpenerRecord, error)
+	GetListPaginateBefore(ctx context.Context, pageSize int64, beforeTokenId int64) ([]*model.OpenerRecord, error)
 }
 
 type UserUseCase struct {
@@ -173,18 +179,20 @@ func (u *UserUseCase) GenVerifyCode(ctx context.Context, userid string) (verifyC
 }
 
 type OpenerGameCase struct {
-	userRepo       UserRepo
-	mintRecordRepo MintRecordRepo
-	logger         *log.Logger
-	conf           *conf.Config
+	userRepo         UserRepo
+	mintRecordRepo   MintRecordRepo
+	openerRecordRepo OpenerRecordRepo
+	logger           *log.Logger
+	conf             *conf.Config
 }
 
-func NewOpenerGameCase(userRepo UserRepo, mintRecordRepo MintRecordRepo, conf *conf.Config, logger *log.Logger) *OpenerGameCase {
+func NewOpenerGameCase(userRepo UserRepo, mintRecordRepo MintRecordRepo, openerRecordRepo OpenerRecordRepo, conf *conf.Config, logger *log.Logger) *OpenerGameCase {
 	return &OpenerGameCase{
-		userRepo:       userRepo,
-		mintRecordRepo: mintRecordRepo,
-		logger:         logger,
-		conf:           conf,
+		userRepo:         userRepo,
+		mintRecordRepo:   mintRecordRepo,
+		openerRecordRepo: openerRecordRepo,
+		logger:           logger,
+		conf:             conf,
 	}
 }
 
@@ -211,4 +219,17 @@ func (ogc *OpenerGameCase) FindInvitedUser(ctx context.Context, mintAddress stri
 		return nil, err
 	}
 	return user, nil
+}
+
+func (ogc *OpenerGameCase) GetOpenerRecordList(ctx context.Context, pageSize int64, afterTokenId int64, beforeTokenId int64) ([]*model.OpenerRecord, error) {
+	if afterTokenId != 0 && beforeTokenId != 0 {
+		return nil, errors.New("query.params.error")
+	}
+	if afterTokenId != 0 {
+		return ogc.openerRecordRepo.GetListPaginateAfter(ctx, pageSize, afterTokenId)
+	}
+	if beforeTokenId != 0 {
+		return ogc.openerRecordRepo.GetListPaginateBefore(ctx, pageSize, beforeTokenId)
+	}
+	return ogc.openerRecordRepo.GetListPaginateFirstPage(ctx, pageSize)
 }
