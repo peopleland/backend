@@ -18,10 +18,23 @@ const (
 	twitterReg string = "I am verifying my identity as (\\S*) on peopleland"
 )
 
+type OpenerRecordWithUserName struct {
+	MintAddress     string
+	MintUserName    string
+	TokenId         int64
+	X               string
+	Y               string
+	BlockNumber     int64
+	BlockTimestamp  int64
+	InvitedAddress  string
+	InvitedUserName string
+}
+
 type UserRepo interface {
 	CreateUser(ctx context.Context, address string) (*model.User, error)
 	GetUser(ctx context.Context, userid string) (*model.User, error)
 	GetOneUserByAddress(ctx context.Context, address string) (*model.User, error)
+	GetUserListByAddressList(ctx context.Context, addressList []string) ([]*model.User, error)
 	FindOrCreateUser(ctx context.Context, address string) (*model.User, error)
 	UpdateUserByAddress(ctx context.Context, address string, updateData map[string]interface{}) (*model.User, error)
 	UpdateUser(ctx context.Context, userid string, updateData map[string]interface{}) (*model.User, error)
@@ -48,6 +61,7 @@ type OpenerRecordRepo interface {
 	GetListPaginateFirstPage(ctx context.Context, pageSize int64) ([]*model.OpenerRecord, error)
 	GetListPaginateAfter(ctx context.Context, pageSize int64, afterTokenId int64) ([]*model.OpenerRecord, error)
 	GetListPaginateBefore(ctx context.Context, pageSize int64, beforeTokenId int64) ([]*model.OpenerRecord, error)
+	SaveOpenerRecord(ctx context.Context, tokenId int64, data *model.OpenerRecord) (*model.OpenerRecord, error)
 }
 
 type UserUseCase struct {
@@ -221,15 +235,61 @@ func (ogc *OpenerGameCase) FindInvitedUser(ctx context.Context, mintAddress stri
 	return user, nil
 }
 
-func (ogc *OpenerGameCase) GetOpenerRecordList(ctx context.Context, pageSize int64, afterTokenId int64, beforeTokenId int64) ([]*model.OpenerRecord, error) {
+func (ogc *OpenerGameCase) GetOpenerRecordList(ctx context.Context, pageSize int64, afterTokenId int64, beforeTokenId int64) ([]*OpenerRecordWithUserName, error) {
 	if afterTokenId != 0 && beforeTokenId != 0 {
 		return nil, errors.New("query.params.error")
 	}
+
+	var data []*model.OpenerRecord
+	var err error
 	if afterTokenId != 0 {
-		return ogc.openerRecordRepo.GetListPaginateAfter(ctx, pageSize, afterTokenId)
+		data, err = ogc.openerRecordRepo.GetListPaginateAfter(ctx, pageSize, afterTokenId)
 	}
 	if beforeTokenId != 0 {
-		return ogc.openerRecordRepo.GetListPaginateBefore(ctx, pageSize, beforeTokenId)
+		data, err = ogc.openerRecordRepo.GetListPaginateBefore(ctx, pageSize, beforeTokenId)
 	}
-	return ogc.openerRecordRepo.GetListPaginateFirstPage(ctx, pageSize)
+	if afterTokenId == 0 && beforeTokenId == 0 {
+		data, err = ogc.openerRecordRepo.GetListPaginateFirstPage(ctx, pageSize)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	addressMap := make(map[string]bool)
+	for _, item := range data {
+		addressMap[item.MintAddress] = true
+		addressMap[item.InvitedAddress] = true
+	}
+	addressList := make([]string, 0)
+	for address, _ := range addressMap {
+		addressList = append(addressList, address)
+	}
+
+	users, err := ogc.userRepo.GetUserListByAddressList(ctx, addressList)
+	if err != nil {
+		return nil, err
+	}
+
+	var userAddress2Name = make(map[string]string)
+	for _, user := range users {
+		if user.Name != "" {
+			userAddress2Name[user.Address] = user.Name
+		}
+	}
+
+	list := make([]*OpenerRecordWithUserName, 0)
+	for _, item := range data {
+		list = append(list, &OpenerRecordWithUserName{
+			MintAddress:     item.MintAddress,
+			MintUserName:    userAddress2Name[item.MintAddress],
+			TokenId:         item.TokenId,
+			X:               item.X,
+			Y:               item.Y,
+			BlockNumber:     item.BlockNumber,
+			BlockTimestamp:  item.BlockTimestamp,
+			InvitedAddress:  item.InvitedAddress,
+			InvitedUserName: userAddress2Name[item.InvitedAddress],
+		})
+	}
+	return list, nil
 }

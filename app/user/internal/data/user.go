@@ -77,6 +77,51 @@ func (r *userRepo) GetOneUserByAddress(ctx context.Context, address string) (*mo
 	return &userdb, nil
 }
 
+func (r *userRepo) GetUserListByAddressList(_ context.Context, addressList []string) ([]*model.User, error) {
+	arr := make([]f.Expr, 0)
+	for _, address := range addressList {
+		arr = append(arr, f.MatchTerm(f.Index(model.UsersByAddressIndex), address))
+	}
+
+	result, err := r.data.faunaClient.Query(
+		f.Map(
+			f.Paginate(
+				f.Union(arr),
+				f.Size(len(arr)),
+			),
+			f.Lambda(
+				"ref",
+				f.Get(f.Var("ref")),
+			),
+		),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var data f.ArrayV
+	err = result.At(f.ObjKey("data")).Get(&data)
+	if err != nil {
+		return nil, err
+	}
+
+	list := make([]*model.User, 0)
+	if len(data) == 0 {
+		return list, nil
+	}
+
+	for _, item := range data {
+		var record model.User
+		err = model.ParseResult(item, &record)
+		list = append(list, &record)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	return list, nil
+}
+
 func (r *userRepo) FindOrCreateUser(ctx context.Context, address string) (*model.User, error) {
 	user, err := r.GetOneUserByAddress(ctx, address)
 	if user != nil {

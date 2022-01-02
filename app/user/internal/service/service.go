@@ -171,13 +171,15 @@ func (u *UserService) OpenerGameOpenerRecordList(ctx context.Context, load *api.
 	openerRecords := make([]*api.OpenerRecord, 0)
 	for _, item := range list {
 		openerRecords = append(openerRecords, &api.OpenerRecord{
-			MintAddress:    item.MintAddress,
-			TokenId:        item.TokenId,
-			X:              item.X,
-			Y:              item.Y,
-			BlockNumber:    item.BlockNumber,
-			BlockTimestamp: item.BlockTimestamp,
-			InvitedAddress: item.InvitedAddress,
+			MintAddress:     item.MintAddress,
+			MintUserName:    item.MintUserName,
+			TokenId:         item.TokenId,
+			X:               item.X,
+			Y:               item.Y,
+			BlockNumber:     item.BlockNumber,
+			BlockTimestamp:  item.BlockTimestamp,
+			InvitedAddress:  item.InvitedAddress,
+			InvitedUserName: item.InvitedUserName,
 		})
 	}
 

@@ -34,5 +34,9 @@ func TestParseResult(t *testing.T) {
 func TestCreateIndex(t *testing.T) {
 	//fc := faunadb.NewFaunaClient("fnAEbfitSAACVKRgPF0ZYX-Q3zZiIE3jQpr_9km0")
 	//
-	//CreateOpenerRecord(fc)
+	//CreateOpenerRecordMeta(fc)
+
+	//CreateMintRecordMeta(fc)
+
+	//DropOpenerRecordCollection(fc)
 }

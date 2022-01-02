@@ -1,12 +1,27 @@
 package model
 
 import (
-	"fmt"
 	f "github.com/fauna/faunadb-go/v4/faunadb"
 )
 
-func CreateMintRecordsByMintAddressAndXAndYSortTsDescIndex(fc *f.FaunaClient) {
-	result, err := fc.Query(
+func DropMintRecordCollection(fc *f.FaunaClient) {
+	_, err := fc.Query(f.Delete(f.Collection(MintRecordCollectionName)))
+	if err != nil {
+		panic(err)
+	}
+}
+
+func CreateMintRecordMeta(fc *f.FaunaClient) {
+	_, err := fc.Query(
+		f.CreateCollection(
+			f.Obj{"name": MintRecordCollectionName},
+		),
+	)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = fc.Query(
 		f.CreateIndex(f.Obj{
 			"name":   MintRecordsByMintAddressAndXAndYSortTsDescIndex,
 			"source": f.Collection(MintRecordCollectionName),
@@ -20,10 +35,19 @@ func CreateMintRecordsByMintAddressAndXAndYSortTsDescIndex(fc *f.FaunaClient) {
 				f.Obj{"field": "ref"},
 			},
 		}))
-	fmt.Println(result, err)
+	if err != nil {
+		panic(err)
+	}
 }
 
-func CreateOpenerRecord(fc *f.FaunaClient) {
+func DropOpenerRecordCollection(fc *f.FaunaClient) {
+	_, err := fc.Query(f.Delete(f.Collection(OpenerRecordCollectionName)))
+	if err != nil {
+		panic(err)
+	}
+}
+
+func CreateOpenerRecordMeta(fc *f.FaunaClient) {
 	_, err := fc.Query(
 		f.CreateCollection(
 			f.Obj{"name": OpenerRecordCollectionName},

@@ -330,6 +330,9 @@
         "mint_address": {
           "type": "string"
         },
+        "mint_user_name": {
+          "type": "string"
+        },
         "token_id": {
           "type": "string",
           "format": "int64"
@@ -349,6 +352,9 @@
           "format": "int64"
         },
         "invited_address": {
+          "type": "string"
+        },
+        "invited_user_name": {
           "type": "string"
         }
       }

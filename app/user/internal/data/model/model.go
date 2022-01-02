@@ -1,7 +1,7 @@
 package model
 
 type User struct {
-	FaunadbCommon
+	FaunadbCommon `fauna:"-" json:"-"`
 
 	Name       string `fauna:"name,omitempty" json:"name"`
 	Address    string `fauna:"address,omitempty" json:"address"`
@@ -12,14 +12,14 @@ type User struct {
 }
 
 type TelegramVerify struct {
-	FaunadbCommon
+	FaunadbCommon `fauna:"-" json:"-"`
 
 	Userid string `fauna:"userid" json:"userid"`
 	Code   string `fauna:"code" json:"code"`
 }
 
 type MintRecord struct {
-	FaunadbCommon
+	FaunadbCommon `fauna:"-" json:"-"`
 
 	MintAddress  string `fauna:"mint_address" json:"mint_address"`
 	X            string `fauna:"x" json:"x"`
@@ -28,7 +28,7 @@ type MintRecord struct {
 }
 
 type OpenerRecord struct {
-	FaunadbCommon
+	FaunadbCommon `fauna:"-" json:"-"`
 
 	MintAddress    string `fauna:"mint_address" json:"mint_address"`
 	TokenId        int64  `fauna:"token_id" json:"token_id"`

@@ -3,6 +3,7 @@ package data
 import (
 	"backend/app/user/internal/conf"
 	"context"
+	"fmt"
 	"log"
 	"testing"
 
@@ -53,4 +54,19 @@ func Test_userRepo_GenVerifyCode(t *testing.T) {
 
 	code, _ := ur.GenVerifyCode(ctx, user.Ref.ID)
 	assert.NotEqual(t, code, "")
+}
+
+func Test_userRepo_GetUserListByAddressList(t *testing.T) {
+	d, _ := NewData(config, logger)
+	ur := NewUserRepo(d, logger)
+	ctx := context.Background()
+
+	addressList := make([]string, 0)
+	addressList = append(addressList, "0x1111111111111111111111111111111111111111")
+	addressList = append(addressList, "123")
+	users, err := ur.GetUserListByAddressList(ctx, addressList)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(users)
 }
