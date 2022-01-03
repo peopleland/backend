@@ -30,11 +30,12 @@ type MintRecord struct {
 type OpenerRecord struct {
 	FaunadbCommon `fauna:"-" json:"-"`
 
-	MintAddress    string `fauna:"mint_address" json:"mint_address"`
-	TokenId        int64  `fauna:"token_id" json:"token_id"`
-	X              string `fauna:"x" json:"x"`
-	Y              string `fauna:"y" json:"y"`
-	BlockNumber    int64  `fauna:"block_number" json:"block_number"`
-	BlockTimestamp int64  `fauna:"block_timestamp" json:"block_timestamp"`
-	InvitedAddress string `fauna:"invited_address" json:"invited_address"`
+	MintAddress             string `fauna:"mint_address" json:"mint_address"`
+	TokenId                 int64  `fauna:"token_id" json:"token_id"`
+	X                       string `fauna:"x" json:"x"`
+	Y                       string `fauna:"y" json:"y"`
+	BlockNumber             int64  `fauna:"block_number" json:"block_number"`
+	BlockTimestamp          int64  `fauna:"block_timestamp" json:"block_timestamp"`
+	InvitedAddress          string `fauna:"invited_address" json:"invited_address"`
+	NextTokenBlockTimestamp int64  `fauna:"next_token_block_timestamp" json:"next_token_block_timestamp"`
 }

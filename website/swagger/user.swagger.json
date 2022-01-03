@@ -356,6 +356,10 @@
         },
         "invited_user_name": {
           "type": "string"
+        },
+        "next_token_block_timestamp": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },

@@ -19,15 +19,16 @@ const (
 )
 
 type OpenerRecordWithUserName struct {
-	MintAddress     string
-	MintUserName    string
-	TokenId         int64
-	X               string
-	Y               string
-	BlockNumber     int64
-	BlockTimestamp  int64
-	InvitedAddress  string
-	InvitedUserName string
+	MintAddress             string
+	MintUserName            string
+	TokenId                 int64
+	X                       string
+	Y                       string
+	BlockNumber             int64
+	BlockTimestamp          int64
+	InvitedAddress          string
+	InvitedUserName         string
+	NextTokenBlockTimestamp int64
 }
 
 type UserRepo interface {
@@ -280,15 +281,16 @@ func (ogc *OpenerGameCase) GetOpenerRecordList(ctx context.Context, pageSize int
 	list := make([]*OpenerRecordWithUserName, 0)
 	for _, item := range data {
 		list = append(list, &OpenerRecordWithUserName{
-			MintAddress:     item.MintAddress,
-			MintUserName:    userAddress2Name[item.MintAddress],
-			TokenId:         item.TokenId,
-			X:               item.X,
-			Y:               item.Y,
-			BlockNumber:     item.BlockNumber,
-			BlockTimestamp:  item.BlockTimestamp,
-			InvitedAddress:  item.InvitedAddress,
-			InvitedUserName: userAddress2Name[item.InvitedAddress],
+			MintAddress:             item.MintAddress,
+			MintUserName:            userAddress2Name[item.MintAddress],
+			TokenId:                 item.TokenId,
+			X:                       item.X,
+			Y:                       item.Y,
+			BlockNumber:             item.BlockNumber,
+			BlockTimestamp:          item.BlockTimestamp,
+			InvitedAddress:          item.InvitedAddress,
+			InvitedUserName:         userAddress2Name[item.InvitedAddress],
+			NextTokenBlockTimestamp: item.NextTokenBlockTimestamp,
 		})
 	}
 	return list, nil
