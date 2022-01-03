@@ -13,6 +13,7 @@ const (
 
 	TelegramVerifyCollectionName = "telegram_verify"
 	TelegramVerifyByUserIdIndex  = "telegram_verify_by_userid"
+	TelegramVerifyByCodeIndex    = "telegram_verify_by_code"
 )
 
 type FaunadbCommon struct {
