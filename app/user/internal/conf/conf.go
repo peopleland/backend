@@ -13,6 +13,9 @@ type Config struct {
 	TwitterToken          string `mapstructure:"PEOPLELAND_TWITTER_TOKEN"`
 	TwitterTokenSecret    string `mapstructure:"PEOPLELAND_TWITTER_TOKEN_SECRET"`
 
+	DiscordBotClientID     string `mapstructure:"PEOPLELAND_DISCORD_BOT_CLIENT_ID"`
+	DiscordBotClientSecret string `mapstructure:"PEOPLELAND_DISCORD_BOT_CLIENT_SECRET"`
+
 	EthClientRawUrl           string `mapstructure:"PEOPLELAND_ETH_CLIENT_RAW_URL"`
 	PeopleLandContractAddress string `mapstructure:"PEOPLELAND_CONTRACT_ADDRESS"`
 }

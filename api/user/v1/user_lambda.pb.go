@@ -18,12 +18,15 @@ var _ = binding.EncodeURL
 const _ = http.Version
 
 type UserLambdaServer interface {
+	ConnectDiscord(context.Context, *ConnectDiscordPayLoad) (*ConnectDiscordResponse, error)
 	ConnectTelegram(context.Context, *ConnectTelegramPayLoad) (*ConnectTelegramResponse, error)
 	ConnectTwitter(context.Context, *ConnectTwitterPayLoad) (*UserProfile, error)
+	DisconnectSocial(context.Context, *DisconnectSocialPayLoad) (*DisconnectSocialResponse, error)
 	GenVerifyCode(context.Context, *GenVerifyCodePayLoad) (*GenVerifyCodeResponse, error)
 	GetProfile(context.Context, *GetProfilePayLoad) (*UserProfile, error)
 	Login(context.Context, *LoginPayLoad) (*LoginResponse, error)
 	PutProfile(context.Context, *PutProfilePayLoad) (*UserProfile, error)
+	TelegramBotDMWebhooks(context.Context, *TelegramBotDMWebhooksPayLoad) (*TelegramBotDMWebhooksResponse, error)
 }
 
 func RegisterUserLambdaServer(s *http.Server, srv UserLambdaServer) {
@@ -33,7 +36,10 @@ func RegisterUserLambdaServer(s *http.Server, srv UserLambdaServer) {
 	g.PUTX("/user/v1/profile", _User_PutProfile0_Lambda_Handler(srv))
 	g.PUTX("/user/v1/connect/twitter", _User_ConnectTwitter0_Lambda_Handler(srv))
 	g.PUTX("/user/v1/connect/telegram", _User_ConnectTelegram0_Lambda_Handler(srv))
+	g.PUTX("/user/v1/connect/discord", _User_ConnectDiscord0_Lambda_Handler(srv))
+	g.POSTX("/user/v1/telegram/webhooks/dm", _User_TelegramBotDMWebhooks0_Lambda_Handler(srv))
 	g.PUTX("/user/v1/gen_verify_code", _User_GenVerifyCode0_Lambda_Handler(srv))
+	g.POSTX("/user/v1/social/disconnect", _User_DisconnectSocial0_Lambda_Handler(srv))
 }
 
 func _User_Login0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Context) error {
@@ -166,6 +172,58 @@ func _User_ConnectTelegram0_Lambda_Handler(srv UserLambdaServer) func(ctx http.C
 	}
 }
 
+func _User_ConnectDiscord0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ConnectDiscordPayLoad
+		if err := ctx.Bind(&in); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//http.SetOperation(ctx,"/api.user.v1.User/ConnectDiscord")
+		//h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		//	return srv.ConnectDiscord(ctx, req.(*ConnectDiscordPayLoad))
+		//})
+		//out, err := h(ctx, &in)
+		out, err := srv.ConnectDiscord(ctx.Ctx, &in)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//reply := out.(*ConnectDiscordResponse)
+		return ctx.JSON(http.StatusOK, map[string]interface{}{
+			"data": out,
+		})
+	}
+}
+
+func _User_TelegramBotDMWebhooks0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in TelegramBotDMWebhooksPayLoad
+		if err := ctx.Bind(&in); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//http.SetOperation(ctx,"/api.user.v1.User/TelegramBotDMWebhooks")
+		//h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		//	return srv.TelegramBotDMWebhooks(ctx, req.(*TelegramBotDMWebhooksPayLoad))
+		//})
+		//out, err := h(ctx, &in)
+		out, err := srv.TelegramBotDMWebhooks(ctx.Ctx, &in)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//reply := out.(*TelegramBotDMWebhooksResponse)
+		return ctx.JSON(http.StatusOK, map[string]interface{}{
+			"data": out,
+		})
+	}
+}
+
 func _User_GenVerifyCode0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in GenVerifyCodePayLoad
@@ -192,12 +250,42 @@ func _User_GenVerifyCode0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Con
 	}
 }
 
+func _User_DisconnectSocial0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in DisconnectSocialPayLoad
+		if err := ctx.Bind(&in); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//http.SetOperation(ctx,"/api.user.v1.User/DisconnectSocial")
+		//h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		//	return srv.DisconnectSocial(ctx, req.(*DisconnectSocialPayLoad))
+		//})
+		//out, err := h(ctx, &in)
+		out, err := srv.DisconnectSocial(ctx.Ctx, &in)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//reply := out.(*DisconnectSocialResponse)
+		return ctx.JSON(http.StatusOK, map[string]interface{}{
+			"data": out,
+		})
+	}
+}
+
 //
 //type UserLambdaClient interface {
+//
+//	ConnectDiscord(ctx context.Context, req *ConnectDiscordPayLoad, opts ...http.CallOption) (rsp *ConnectDiscordResponse, err error)
 //
 //	ConnectTelegram(ctx context.Context, req *ConnectTelegramPayLoad, opts ...http.CallOption) (rsp *ConnectTelegramResponse, err error)
 //
 //	ConnectTwitter(ctx context.Context, req *ConnectTwitterPayLoad, opts ...http.CallOption) (rsp *UserProfile, err error)
+//
+//	DisconnectSocial(ctx context.Context, req *DisconnectSocialPayLoad, opts ...http.CallOption) (rsp *DisconnectSocialResponse, err error)
 //
 //	GenVerifyCode(ctx context.Context, req *GenVerifyCodePayLoad, opts ...http.CallOption) (rsp *GenVerifyCodeResponse, err error)
 //
@@ -206,6 +294,8 @@ func _User_GenVerifyCode0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Con
 //	Login(ctx context.Context, req *LoginPayLoad, opts ...http.CallOption) (rsp *LoginResponse, err error)
 //
 //	PutProfile(ctx context.Context, req *PutProfilePayLoad, opts ...http.CallOption) (rsp *UserProfile, err error)
+//
+//	TelegramBotDMWebhooks(ctx context.Context, req *TelegramBotDMWebhooksPayLoad, opts ...http.CallOption) (rsp *TelegramBotDMWebhooksResponse, err error)
 //
 //}
 //
@@ -217,6 +307,19 @@ func _User_GenVerifyCode0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Con
 //	return &UserLambdaClientImpl{client}
 //}
 //
+//
+//func (c *UserLambdaClientImpl) ConnectDiscord(ctx context.Context, in *ConnectDiscordPayLoad, opts ...http.CallOption) (*ConnectDiscordResponse, error) {
+//	var out ConnectDiscordResponse
+//	pattern := "/user/v1/connect/discord"
+//	path := binding.EncodeURL(pattern, in, false)
+//	opts = append(opts, http.Operation("/api.user.v1.User/ConnectDiscord"))
+//	opts = append(opts, http.PathTemplate(pattern))
+//	//	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+//	//	if err != nil {
+//		return nil, err
+//	}
+//	return &out, err
+//}
 //
 //func (c *UserLambdaClientImpl) ConnectTelegram(ctx context.Context, in *ConnectTelegramPayLoad, opts ...http.CallOption) (*ConnectTelegramResponse, error) {
 //	var out ConnectTelegramResponse
@@ -238,6 +341,19 @@ func _User_GenVerifyCode0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Con
 //	opts = append(opts, http.Operation("/api.user.v1.User/ConnectTwitter"))
 //	opts = append(opts, http.PathTemplate(pattern))
 //	//	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+//	//	if err != nil {
+//		return nil, err
+//	}
+//	return &out, err
+//}
+//
+//func (c *UserLambdaClientImpl) DisconnectSocial(ctx context.Context, in *DisconnectSocialPayLoad, opts ...http.CallOption) (*DisconnectSocialResponse, error) {
+//	var out DisconnectSocialResponse
+//	pattern := "/user/v1/social/disconnect"
+//	path := binding.EncodeURL(pattern, in, false)
+//	opts = append(opts, http.Operation("/api.user.v1.User/DisconnectSocial"))
+//	opts = append(opts, http.PathTemplate(pattern))
+//	//	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 //	//	if err != nil {
 //		return nil, err
 //	}
@@ -290,6 +406,19 @@ func _User_GenVerifyCode0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Con
 //	opts = append(opts, http.Operation("/api.user.v1.User/PutProfile"))
 //	opts = append(opts, http.PathTemplate(pattern))
 //	//	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+//	//	if err != nil {
+//		return nil, err
+//	}
+//	return &out, err
+//}
+//
+//func (c *UserLambdaClientImpl) TelegramBotDMWebhooks(ctx context.Context, in *TelegramBotDMWebhooksPayLoad, opts ...http.CallOption) (*TelegramBotDMWebhooksResponse, error) {
+//	var out TelegramBotDMWebhooksResponse
+//	pattern := "/user/v1/telegram/webhooks/dm"
+//	path := binding.EncodeURL(pattern, in, false)
+//	opts = append(opts, http.Operation("/api.user.v1.User/TelegramBotDMWebhooks"))
+//	opts = append(opts, http.PathTemplate(pattern))
+//	//	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 //	//	if err != nil {
 //		return nil, err
 //	}

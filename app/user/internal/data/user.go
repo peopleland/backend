@@ -194,6 +194,20 @@ func (r *userRepo) GetOrCreateTelegramVerifyCode(ctx context.Context, userid str
 	}
 }
 
+func (r *userRepo) GetUserByTelegramVerifyCode(ctx context.Context, code string) (string, error) {
+	value, err := r.data.faunaClient.Query(f.Get(
+		f.MatchTerm(f.Index(model.TelegramVerifyByCodeIndex), code)))
+	if err != nil {
+		return "", err
+	}
+	var dbData model.TelegramVerify
+	err = model.ParseResult(value, &dbData)
+	if err != nil {
+		return "", err
+	}
+	return dbData.Userid, err
+}
+
 func (r *userRepo) GenVerifyCode(ctx context.Context, userid string) (string, error) {
 	user, err := r.GetUser(ctx, userid)
 	if err != nil {

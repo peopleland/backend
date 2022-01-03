@@ -3,9 +3,9 @@ package service
 import (
 	api "backend/api/user/v1"
 	"backend/app/user/internal/biz"
+	mock_biz "backend/app/user/internal/biz/mock"
 	"backend/app/user/internal/conf"
 	dt "backend/app/user/internal/data"
-	"backend/app/user/internal/mock_biz"
 	"backend/pkg/jwt"
 	"context"
 	"log"
@@ -28,13 +28,17 @@ var config = &conf.Config{
 
 var logger = log.Default()
 
-func TestUserService_Login(t *testing.T) {
-
+func newUserCase() (biz.UserRepo, *biz.UserUseCase) {
 	d, _ := dt.NewData(config, logger)
 	userRepo := dt.NewUserRepo(d, logger)
 	twitterRepo := dt.NewTwitterRepo(config)
+	discordRepo := dt.NewDiscordRepo(config)
 	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
-	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, config, logger)
+	return userRepo, biz.NewUserUseCase(userRepo, twitterRepo, discordRepo, peopleLandContractRepo, config, logger)
+}
+
+func TestUserService_Login(t *testing.T) {
+	_, userUseCase := newUserCase()
 	us := &UserService{
 		uc:     userUseCase,
 		logger: logger,
@@ -74,11 +78,7 @@ func TestUserService_Login(t *testing.T) {
 }
 
 func TestUserService_GetProfile(t *testing.T) {
-	d, _ := dt.NewData(config, logger)
-	userRepo := dt.NewUserRepo(d, logger)
-	twitterRepo := dt.NewTwitterRepo(config)
-	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
-	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, config, logger)
+	_, userUseCase := newUserCase()
 	us := &UserService{
 		uc:     userUseCase,
 		logger: logger,
@@ -109,11 +109,7 @@ func TestUserService_GetProfile(t *testing.T) {
 }
 
 func TestUserService_PutProfile(t *testing.T) {
-	d, _ := dt.NewData(config, logger)
-	userRepo := dt.NewUserRepo(d, logger)
-	twitterRepo := dt.NewTwitterRepo(config)
-	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
-	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, config, logger)
+	_, userUseCase := newUserCase()
 	us := &UserService{
 		uc:     userUseCase,
 		logger: logger,
@@ -153,10 +149,7 @@ func TestUserService_ConnectTwitter(t *testing.T) {
 	defer mockCtl.Finish()
 	mockTwitterRepo := mock_biz.NewMockTwitterRepo(mockCtl)
 
-	d, _ := dt.NewData(config, logger)
-	userRepo := dt.NewUserRepo(d, logger)
-	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
-	userUseCase := biz.NewUserUseCase(userRepo, mockTwitterRepo, peopleLandContractRepo, config, logger)
+	userRepo, userUseCase := newUserCase()
 	us := &UserService{
 		uc:     userUseCase,
 		logger: logger,
@@ -209,11 +202,7 @@ func TestUserService_ConnectTwitter(t *testing.T) {
 }
 
 func TestUserService_GenVerifyCode(t *testing.T) {
-	d, _ := dt.NewData(config, logger)
-	userRepo := dt.NewUserRepo(d, logger)
-	twitterRepo := dt.NewTwitterRepo(config)
-	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
-	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, config, logger)
+	userRepo, userUseCase := newUserCase()
 	us := &UserService{
 		uc:     userUseCase,
 		logger: logger,

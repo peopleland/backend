@@ -36,12 +36,44 @@ service User {
       body: "*"
     };
   }
+  rpc ConnectDiscord (ConnectDiscordPayLoad) returns (ConnectDiscordResponse) {
+    option (google.api.http) = {
+      put: "/user/v1/connect/discord",
+      body: "*"
+    };
+  }
+  rpc TelegramBotDMWebhooks (TelegramBotDMWebhooksPayLoad) returns (TelegramBotDMWebhooksResponse) {
+    option (google.api.http) = {
+      post: "/user/v1/telegram/webhooks/dm",
+      body: "*"
+    };
+  }
   rpc GenVerifyCode (GenVerifyCodePayLoad) returns (GenVerifyCodeResponse) {
     option (google.api.http) = {
       put: "/user/v1/gen_verify_code",
       body: "*"
     };
   }
+  rpc DisconnectSocial (DisconnectSocialPayLoad) returns (DisconnectSocialResponse) {
+    option (google.api.http) = {
+      post: "/user/v1/social/disconnect",
+      body: "*"
+    };
+  }
+}
+
+message DiscordInfo {
+  string id = 1;
+  string username = 2;
+  string discriminator = 3;
+  string avatar = 4;
+}
+
+message TelegramInfo {
+  int64 id = 1;
+  string first_name = 2;
+  string username = 3;
+  string language_code = 4;
 }
 
 message UserProfile {
@@ -49,8 +81,8 @@ message UserProfile {
   string address = 2;
   string name = 3;
   string twitter = 4;
-  string telegram = 5;
-  string discord = 6;
+  TelegramInfo telegram = 5;
+  DiscordInfo discord = 6;
 }
 
 message LoginPayLoad {
@@ -82,3 +114,50 @@ message GenVerifyCodePayLoad {}
 message GenVerifyCodeResponse {
   string verify_code = 1;
 }
+
+message ConnectDiscordPayLoad {
+  string code = 1;
+  string redirect_uri = 2;
+}
+
+message ConnectDiscordResponse {}
+
+message TelegramDM {
+  message DMFrom {
+    int64 id = 1;
+    bool is_bot = 2;
+    string first_name = 3;
+    string username = 4;
+    string language_code = 5;
+  }
+  message DMChat {
+    int64 id = 1;
+    string first_name = 2;
+    string username = 3;
+    string type = 4;
+  }
+  int64 message_id = 1;
+  DMFrom from = 2;
+  DMChat chat = 3;
+  int64 date = 4;
+  string text = 5;
+}
+
+message TelegramBotDMWebhooksPayLoad {
+  int64 update_id = 1;
+  TelegramDM message = 2;
+}
+
+message TelegramBotDMWebhooksResponse {}
+
+enum SocialType {
+  TWITTER = 0;
+  DISCORD = 1;
+  TELEGRAM = 2;
+}
+
+message DisconnectSocialPayLoad {
+  SocialType social = 1;
+}
+
+message DisconnectSocialResponse {}
