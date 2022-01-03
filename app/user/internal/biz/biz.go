@@ -194,7 +194,7 @@ func (u *UserUseCase) ConnectTelegram(ctx context.Context, code string, telegram
 }
 
 func (u *UserUseCase) DisconnectSocial(ctx context.Context, userid string, socialType v1.SocialType) error {
-	_, err := u.repo.UpdateUser(ctx, userid, map[string]interface{}{socialType.String(): nil})
+	_, err := u.repo.UpdateUser(ctx, userid, map[string]interface{}{strings.ToLower(socialType.String()): nil})
 	if err != nil {
 		return err
 	}
