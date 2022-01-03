@@ -168,7 +168,7 @@ func (r *userRepo) CreateTelegramVerifyCode(ctx context.Context, userid string) 
 	return &data, nil
 }
 
-func (r *userRepo) GetOrCreateTelegramVerifyCode(ctx context.Context, userid string) (dbData *model.TelegramVerify, err error) {
+func (r *userRepo) GetOrCreateTelegramVerifyCode(ctx context.Context, userid string) (*model.TelegramVerify, error) {
 	var existed bool
 	get, err := r.data.faunaClient.Query(f.Exists(f.MatchTerm(f.Index(model.TelegramVerifyByUserIdIndex), userid)))
 	if err != nil {
@@ -184,11 +184,12 @@ func (r *userRepo) GetOrCreateTelegramVerifyCode(ctx context.Context, userid str
 		if err != nil {
 			return nil, err
 		}
+		var dbData model.TelegramVerify
 		err = model.ParseResult(value, &dbData)
 		if err != nil {
 			return nil, err
 		}
-		return dbData, err
+		return &dbData, err
 	} else {
 		return r.CreateTelegramVerifyCode(ctx, userid)
 	}

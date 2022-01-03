@@ -28,6 +28,6 @@ type TelegramUser struct {
 type TelegramVerify struct {
 	FaunadbCommon
 
-	Userid string `fauna:"userid" json:"userid"`
-	Code   string `fauna:"code" json:"code"`
+	Userid string `fauna:"userid,omitempty" json:"userid"`
+	Code   string `fauna:"code,omitempty" json:"code"`
 }
