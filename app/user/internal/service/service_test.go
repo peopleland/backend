@@ -148,8 +148,11 @@ func TestUserService_ConnectTwitter(t *testing.T) {
 	mockCtl := gomock.NewController(t)
 	defer mockCtl.Finish()
 	mockTwitterRepo := mock_biz.NewMockTwitterRepo(mockCtl)
-
-	userRepo, userUseCase := newUserCase()
+	d, _ := dt.NewData(config, logger)
+	userRepo := dt.NewUserRepo(d, logger)
+	discordRepo := dt.NewDiscordRepo(config)
+	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
+	userUseCase := biz.NewUserUseCase(userRepo, mockTwitterRepo, discordRepo, peopleLandContractRepo, config, logger)
 	us := &UserService{
 		uc:     userUseCase,
 		logger: logger,
