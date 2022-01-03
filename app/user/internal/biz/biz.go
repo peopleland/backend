@@ -63,6 +63,15 @@ type OpenerRecordRepo interface {
 	GetListPaginateAfter(ctx context.Context, pageSize int64, afterTokenId int64) ([]*model.OpenerRecord, error)
 	GetListPaginateBefore(ctx context.Context, pageSize int64, beforeTokenId int64) ([]*model.OpenerRecord, error)
 	SaveOpenerRecord(ctx context.Context, tokenId int64, data *model.OpenerRecord) (*model.OpenerRecord, error)
+	GetNewest(ctx context.Context) (*model.OpenerRecord, error)
+	GetOpenerRecordByTokenId(ctx context.Context, tokenId int64) (*model.OpenerRecord, error)
+}
+
+type OpenerGameRoundInfoRepo interface {
+	GetByRoundNumber(ctx context.Context, roundNumber int64) (*model.OpenerGameRoundInfo, error)
+	Create(ctx context.Context, roundNumber int64, data *model.OpenerGameRoundInfo) (*model.OpenerGameRoundInfo, error)
+	Update(ctx context.Context, roundNumber int64, data *model.OpenerGameRoundInfo) (*model.OpenerGameRoundInfo, error)
+	Save(ctx context.Context, roundNumber int64, data *model.OpenerGameRoundInfo) (*model.OpenerGameRoundInfo, error)
 }
 
 type UserUseCase struct {
@@ -194,20 +203,22 @@ func (u *UserUseCase) GenVerifyCode(ctx context.Context, userid string) (verifyC
 }
 
 type OpenerGameCase struct {
-	userRepo         UserRepo
-	mintRecordRepo   MintRecordRepo
-	openerRecordRepo OpenerRecordRepo
-	logger           *log.Logger
-	conf             *conf.Config
+	userRepo                UserRepo
+	mintRecordRepo          MintRecordRepo
+	openerRecordRepo        OpenerRecordRepo
+	openerGameRoundInfoRepo OpenerGameRoundInfoRepo
+	logger                  *log.Logger
+	conf                    *conf.Config
 }
 
-func NewOpenerGameCase(userRepo UserRepo, mintRecordRepo MintRecordRepo, openerRecordRepo OpenerRecordRepo, conf *conf.Config, logger *log.Logger) *OpenerGameCase {
+func NewOpenerGameCase(userRepo UserRepo, mintRecordRepo MintRecordRepo, openerRecordRepo OpenerRecordRepo, openerGameRoundInfoRepo OpenerGameRoundInfoRepo, conf *conf.Config, logger *log.Logger) *OpenerGameCase {
 	return &OpenerGameCase{
-		userRepo:         userRepo,
-		mintRecordRepo:   mintRecordRepo,
-		openerRecordRepo: openerRecordRepo,
-		logger:           logger,
-		conf:             conf,
+		userRepo:                userRepo,
+		mintRecordRepo:          mintRecordRepo,
+		openerRecordRepo:        openerRecordRepo,
+		openerGameRoundInfoRepo: openerGameRoundInfoRepo,
+		logger:                  logger,
+		conf:                    conf,
 	}
 }
 
@@ -294,4 +305,58 @@ func (ogc *OpenerGameCase) GetOpenerRecordList(ctx context.Context, pageSize int
 		})
 	}
 	return list, nil
+}
+
+func (ogc *OpenerGameCase) GetOpenerGameRoundInfo(ctx context.Context, roundNumber int64) (*model.OpenerGameRoundInfo, *OpenerRecordWithUserName, error) {
+	var info *model.OpenerGameRoundInfo
+	var record *model.OpenerRecord
+	var err error
+	info, err = ogc.openerGameRoundInfoRepo.GetByRoundNumber(ctx, roundNumber)
+	if err != nil {
+		return nil, nil, err
+	}
+	if info.HasWinner {
+		record, err = ogc.openerRecordRepo.GetOpenerRecordByTokenId(ctx, info.WinnerTokenId)
+	} else {
+		record, err = ogc.openerRecordRepo.GetNewest(ctx)
+	}
+	if err != nil {
+		return nil, nil, err
+	}
+	if record == nil {
+		return info, nil, nil
+	}
+
+	addressList := make([]string, 0)
+	if record.MintAddress != "" {
+		addressList = append(addressList, record.MintAddress)
+	}
+	if record.InvitedAddress != "" {
+		addressList = append(addressList, record.InvitedAddress)
+	}
+
+	users, err := ogc.userRepo.GetUserListByAddressList(ctx, addressList)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var userAddress2Name = make(map[string]string)
+	for _, user := range users {
+		if user.Name != "" {
+			userAddress2Name[user.Address] = user.Name
+		}
+	}
+
+	return info, &OpenerRecordWithUserName{
+		MintAddress:             record.MintAddress,
+		MintUserName:            userAddress2Name[record.MintAddress],
+		TokenId:                 record.TokenId,
+		X:                       record.X,
+		Y:                       record.Y,
+		BlockNumber:             record.BlockNumber,
+		BlockTimestamp:          record.BlockTimestamp,
+		InvitedAddress:          record.InvitedAddress,
+		InvitedUserName:         userAddress2Name[record.InvitedAddress],
+		NextTokenBlockTimestamp: record.NextTokenBlockTimestamp,
+	}, nil
 }

@@ -21,6 +21,7 @@ type UserLambdaServer interface {
 	ConnectTelegram(context.Context, *ConnectTelegramPayLoad) (*ConnectTelegramResponse, error)
 	ConnectTwitter(context.Context, *ConnectTwitterPayLoad) (*UserProfile, error)
 	GenVerifyCode(context.Context, *GenVerifyCodePayLoad) (*GenVerifyCodeResponse, error)
+	GetOpenerGameRoundInfo(context.Context, *GetOpenerGameRoundInfoPayLoad) (*GetOpenerGameRoundInfoResponse, error)
 	GetProfile(context.Context, *GetProfilePayLoad) (*UserProfile, error)
 	Login(context.Context, *LoginPayLoad) (*LoginResponse, error)
 	OpenerGameMintRecord(context.Context, *OpenerGameMintRecordPayLoad) (*OpenerGameMintRecordResponse, error)
@@ -38,6 +39,7 @@ func RegisterUserLambdaServer(s *http.Server, srv UserLambdaServer) {
 	g.PUTX("/user/v1/gen_verify_code", _User_GenVerifyCode0_Lambda_Handler(srv))
 	g.POSTX("/user/v1/opener_game/mint_record", _User_OpenerGameMintRecord0_Lambda_Handler(srv))
 	g.GETX("/user/v1/opener_game/opener_records", _User_OpenerGameOpenerRecordList0_Lambda_Handler(srv))
+	g.GETX("/user/v1/opener_game/round_info", _User_GetOpenerGameRoundInfo0_Lambda_Handler(srv))
 }
 
 func _User_Login0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Context) error {
@@ -248,6 +250,32 @@ func _User_OpenerGameOpenerRecordList0_Lambda_Handler(srv UserLambdaServer) func
 	}
 }
 
+func _User_GetOpenerGameRoundInfo0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetOpenerGameRoundInfoPayLoad
+		if err := ctx.BindQuery(&in); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//http.SetOperation(ctx,"/api.user.v1.User/GetOpenerGameRoundInfo")
+		//h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		//	return srv.GetOpenerGameRoundInfo(ctx, req.(*GetOpenerGameRoundInfoPayLoad))
+		//})
+		//out, err := h(ctx, &in)
+		out, err := srv.GetOpenerGameRoundInfo(ctx.Ctx, &in)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//reply := out.(*GetOpenerGameRoundInfoResponse)
+		return ctx.JSON(http.StatusOK, map[string]interface{}{
+			"data": out,
+		})
+	}
+}
+
 //
 //type UserLambdaClient interface {
 //
@@ -256,6 +284,8 @@ func _User_OpenerGameOpenerRecordList0_Lambda_Handler(srv UserLambdaServer) func
 //	ConnectTwitter(ctx context.Context, req *ConnectTwitterPayLoad, opts ...http.CallOption) (rsp *UserProfile, err error)
 //
 //	GenVerifyCode(ctx context.Context, req *GenVerifyCodePayLoad, opts ...http.CallOption) (rsp *GenVerifyCodeResponse, err error)
+//
+//	GetOpenerGameRoundInfo(ctx context.Context, req *GetOpenerGameRoundInfoPayLoad, opts ...http.CallOption) (rsp *GetOpenerGameRoundInfoResponse, err error)
 //
 //	GetProfile(ctx context.Context, req *GetProfilePayLoad, opts ...http.CallOption) (rsp *UserProfile, err error)
 //
@@ -311,6 +341,19 @@ func _User_OpenerGameOpenerRecordList0_Lambda_Handler(srv UserLambdaServer) func
 //	opts = append(opts, http.Operation("/api.user.v1.User/GenVerifyCode"))
 //	opts = append(opts, http.PathTemplate(pattern))
 //	//	err := c.cc.Invoke(ctx, "PUT", path, in, &out, opts...)
+//	//	if err != nil {
+//		return nil, err
+//	}
+//	return &out, err
+//}
+//
+//func (c *UserLambdaClientImpl) GetOpenerGameRoundInfo(ctx context.Context, in *GetOpenerGameRoundInfoPayLoad, opts ...http.CallOption) (*GetOpenerGameRoundInfoResponse, error) {
+//	var out GetOpenerGameRoundInfoResponse
+//	pattern := "/user/v1/opener_game/round_info"
+//	path := binding.EncodeURL(pattern, in, true)
+//	opts = append(opts, http.Operation("/api.user.v1.User/GetOpenerGameRoundInfo"))
+//	opts = append(opts, http.PathTemplate(pattern))
+//	//	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 //	//	if err != nil {
 //		return nil, err
 //	}

@@ -51,7 +51,7 @@ func (u *UserService) Login(ctx context.Context, load *api.LoginPayLoad) (*api.L
 	return &api.LoginResponse{Jwt: *jwtStr}, nil
 }
 
-func (u *UserService) GetProfile(ctx context.Context, load *api.GetProfilePayLoad) (*api.UserProfile, error) {
+func (u *UserService) GetProfile(ctx context.Context, _ *api.GetProfilePayLoad) (*api.UserProfile, error) {
 	address, _, err := parseAuthorization(ctx, u.conf)
 	if err != nil {
 		return nil, err
@@ -110,7 +110,7 @@ func (u *UserService) ConnectTwitter(ctx context.Context, load *api.ConnectTwitt
 	}, nil
 }
 
-func (u *UserService) ConnectTelegram(ctx context.Context, load *api.ConnectTelegramPayLoad) (*api.ConnectTelegramResponse, error) {
+func (u *UserService) ConnectTelegram(ctx context.Context, _ *api.ConnectTelegramPayLoad) (*api.ConnectTelegramResponse, error) {
 	_, userid, err := parseAuthorization(ctx, u.conf)
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func (u *UserService) ConnectTelegram(ctx context.Context, load *api.ConnectTele
 	return &api.ConnectTelegramResponse{Code: code}, nil
 }
 
-func (u *UserService) GenVerifyCode(ctx context.Context, load *api.GenVerifyCodePayLoad) (*api.GenVerifyCodeResponse, error) {
+func (u *UserService) GenVerifyCode(ctx context.Context, _ *api.GenVerifyCodePayLoad) (*api.GenVerifyCodeResponse, error) {
 	_, userid, err := parseAuthorization(ctx, u.conf)
 	if err != nil {
 		return nil, err
@@ -185,4 +185,43 @@ func (u *UserService) OpenerGameOpenerRecordList(ctx context.Context, load *api.
 	}
 
 	return &api.OpenerGameOpenerRecordListResponse{OpenerRecords: openerRecords}, nil
+}
+
+func (u *UserService) GetOpenerGameRoundInfo(ctx context.Context, load *api.GetOpenerGameRoundInfoPayLoad) (*api.GetOpenerGameRoundInfoResponse, error) {
+	info, record, err := u.ogc.GetOpenerGameRoundInfo(ctx, 1)
+	if err != nil {
+		return nil, err
+	}
+	var openerRecordResponse *api.OpenerRecord
+	var infoResponse *api.OpenerGameRoundInfo
+	if info != nil {
+		infoResponse = &api.OpenerGameRoundInfo{
+			RoundNumber:        info.RoundNumber,
+			BuilderTokenAmount: info.BuilderTokenAmount,
+			StartTimestamp:     info.StartTimestamp,
+			EthAmount:          info.EthAmount,
+			EndTimestamp:       info.EndTimestamp,
+			HasWinner:          info.HasWinner,
+			WinnerTokenId:      info.WinnerTokenId,
+		}
+	}
+	if record != nil {
+		openerRecordResponse = &api.OpenerRecord{
+			MintAddress:             record.MintAddress,
+			MintUserName:            record.MintUserName,
+			TokenId:                 record.TokenId,
+			X:                       record.X,
+			Y:                       record.Y,
+			BlockNumber:             record.BlockNumber,
+			BlockTimestamp:          record.BlockTimestamp,
+			InvitedAddress:          record.InvitedAddress,
+			InvitedUserName:         record.InvitedUserName,
+			NextTokenBlockTimestamp: record.NextTokenBlockTimestamp,
+		}
+	}
+
+	return &api.GetOpenerGameRoundInfoResponse{
+		Info:         infoResponse,
+		OpenerRecord: openerRecordResponse,
+	}, nil
 }

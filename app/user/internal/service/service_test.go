@@ -29,18 +29,44 @@ var config = &conf.Config{
 
 var logger = log.Default()
 
-func TestUserService_Login(t *testing.T) {
+func newTestUserService(t *testing.T) *UserService {
+	mockCtl := gomock.NewController(t)
+	defer mockCtl.Finish()
+	twitterRepo := mock_biz.NewMockTwitterRepo(mockCtl)
 
 	d, _ := dt.NewData(config, logger)
 	userRepo := dt.NewUserRepo(d, logger)
-	twitterRepo := dt.NewTwitterRepo(config)
+
 	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
+	mintRecordRepo := dt.NewMintRecordRepo(d, logger)
+	openerRecordRepo := dt.NewOpenerRecordRepo(d, logger)
+	openerGameRoundInfoRepo := dt.NewOpenerGameRoundInfoRepo(d, logger)
+
 	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, config, logger)
-	us := &UserService{
+	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, config, logger)
+
+	return &UserService{
 		uc:     userUseCase,
+		ogc:    openerGameCase,
 		logger: logger,
 		conf:   config,
 	}
+
+}
+
+func TestUserService_Login(t *testing.T) {
+
+	//d, _ := dt.NewData(config, logger)
+	//userRepo := dt.NewUserRepo(d, logger)
+	//twitterRepo := dt.NewTwitterRepo(config)
+	//peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
+	//userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, config, logger)
+	//us := &UserService{
+	//	uc:     userUseCase,
+	//	logger: logger,
+	//	conf:   config,
+	//}
+	us := newTestUserService(t)
 	addresOne := "0x40fcc42c5a25945c02b19204d082a67591d30cf6"
 	addresTwo := "0x3946d96a4b46657ca95CBE85d8a60b822186Ad1f"
 	signatureOne := "0xff0a604b4400dbc23d2a8ed7a728c552246cd59bcd6a795a7e212622142e9b814f1da8e8af26e03205131b323cb1076486755abb1fbed5f852879257cb4e60c01b"
@@ -75,17 +101,17 @@ func TestUserService_Login(t *testing.T) {
 }
 
 func TestUserService_GetProfile(t *testing.T) {
-	d, _ := dt.NewData(config, logger)
-	userRepo := dt.NewUserRepo(d, logger)
-	twitterRepo := dt.NewTwitterRepo(config)
-	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
-	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, config, logger)
-	us := &UserService{
-		uc:     userUseCase,
-		logger: logger,
-		conf:   config,
-	}
-
+	//d, _ := dt.NewData(config, logger)
+	//userRepo := dt.NewUserRepo(d, logger)
+	//twitterRepo := dt.NewTwitterRepo(config)
+	//peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
+	//userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, config, logger)
+	//us := &UserService{
+	//	uc:     userUseCase,
+	//	logger: logger,
+	//	conf:   config,
+	//}
+	us := newTestUserService(t)
 	address := "0x40fcc42c5a25945c02b19204d082a67591d30cf6"
 	claims := jwt.NewMapClaims("x", address)
 	exp := int64(86400)
@@ -110,17 +136,17 @@ func TestUserService_GetProfile(t *testing.T) {
 }
 
 func TestUserService_PutProfile(t *testing.T) {
-	d, _ := dt.NewData(config, logger)
-	userRepo := dt.NewUserRepo(d, logger)
-	twitterRepo := dt.NewTwitterRepo(config)
-	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
-	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, config, logger)
-	us := &UserService{
-		uc:     userUseCase,
-		logger: logger,
-		conf:   config,
-	}
-
+	//d, _ := dt.NewData(config, logger)
+	//userRepo := dt.NewUserRepo(d, logger)
+	//twitterRepo := dt.NewTwitterRepo(config)
+	//peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
+	//userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, config, logger)
+	//us := &UserService{
+	//	uc:     userUseCase,
+	//	logger: logger,
+	//	conf:   config,
+	//}
+	us := newTestUserService(t)
 	address := "0x40fcc42c5a25945c02b19204d082a67591d30cf6"
 	claims := jwt.NewMapClaims("x", address)
 	exp := int64(86400)
@@ -260,9 +286,10 @@ func TestUserService_OpenerGameMintRecord(t *testing.T) {
 	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
 	mintRecordRepo := dt.NewMintRecordRepo(d, logger)
 	openerRecordRepo := dt.NewOpenerRecordRepo(d, logger)
+	openerGameRoundInfoRepo := dt.NewOpenerGameRoundInfoRepo(d, logger)
 
 	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, config, logger)
-	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, config, logger)
+	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, config, logger)
 
 	us := &UserService{
 		uc:     userUseCase,
@@ -303,9 +330,10 @@ func TestUserService_OpenerGameOpenerRecordList(t *testing.T) {
 	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
 	mintRecordRepo := dt.NewMintRecordRepo(d, logger)
 	openerRecordRepo := dt.NewOpenerRecordRepo(d, logger)
+	openerGameRoundInfoRepo := dt.NewOpenerGameRoundInfoRepo(d, logger)
 
 	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, config, logger)
-	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, config, logger)
+	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, config, logger)
 
 	us := &UserService{
 		uc:     userUseCase,
@@ -346,4 +374,92 @@ func TestUserService_OpenerGameOpenerRecordList(t *testing.T) {
 			assert.Empty(t, err)
 		})
 	}
+}
+
+func TestUserService_GetOpenerGameRoundInfo(t *testing.T) {
+	d, _ := dt.NewData(config, logger)
+	userRepo := dt.NewUserRepo(d, logger)
+	twitterRepo := dt.NewTwitterRepo(config)
+	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
+	mintRecordRepo := dt.NewMintRecordRepo(d, logger)
+	openerRecordRepo := dt.NewOpenerRecordRepo(d, logger)
+	openerGameRoundInfoRepo := dt.NewOpenerGameRoundInfoRepo(d, logger)
+
+	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, peopleLandContractRepo, config, logger)
+	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, config, logger)
+
+	us := &UserService{
+		uc:     userUseCase,
+		ogc:    openerGameCase,
+		logger: logger,
+		conf:   config,
+	}
+
+	ctx := context.Background()
+
+	_, err := openerRecordRepo.SaveOpenerRecord(ctx, 1, &model.OpenerRecord{
+		MintAddress:    "0x1111111111111111111111111111111111111111",
+		TokenId:        1,
+		X:              "1",
+		Y:              "2",
+		BlockNumber:    1,
+		BlockTimestamp: 1,
+		InvitedAddress: "0x40fcc42c5a25945c02b19204d082a67591d30cf6",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = openerRecordRepo.SaveOpenerRecord(ctx, 2, &model.OpenerRecord{
+		MintAddress:    "0x1111111111111111111111111111111111111111",
+		TokenId:        2,
+		X:              "2",
+		Y:              "3",
+		BlockNumber:    2,
+		BlockTimestamp: 2,
+		InvitedAddress: "0x40fcc42c5a25945c02b19204d082a67591d30cf6",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = openerGameRoundInfoRepo.Save(ctx, 1, &model.OpenerGameRoundInfo{
+		RoundNumber:        1,
+		BuilderTokenAmount: "50000",
+		EthAmount:          "0.66",
+		StartTimestamp:     1,
+		EndTimestamp:       1000,
+		HasWinner:          false,
+		WinnerTokenId:      0,
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	load := &api.GetOpenerGameRoundInfoPayLoad{}
+	res, err := us.GetOpenerGameRoundInfo(ctx, load)
+	assert.Equal(t, res.Info.EthAmount, "0.66")
+	assert.Equal(t, res.OpenerRecord.MintAddress, "0x1111111111111111111111111111111111111111")
+	assert.Equal(t, res.OpenerRecord.TokenId, int64(2))
+
+	_, err = openerGameRoundInfoRepo.Save(ctx, 1, &model.OpenerGameRoundInfo{
+		RoundNumber:        1,
+		BuilderTokenAmount: "50000",
+		EthAmount:          "0.66",
+		StartTimestamp:     1,
+		EndTimestamp:       1000,
+		HasWinner:          true,
+		WinnerTokenId:      1,
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	res, err = us.GetOpenerGameRoundInfo(ctx, load)
+	assert.Equal(t, res.Info.EthAmount, "0.66")
+	assert.Equal(t, res.OpenerRecord.MintAddress, "0x1111111111111111111111111111111111111111")
+	assert.Equal(t, res.OpenerRecord.TokenId, int64(1))
+
 }

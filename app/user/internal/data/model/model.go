@@ -39,3 +39,15 @@ type OpenerRecord struct {
 	InvitedAddress          string `fauna:"invited_address" json:"invited_address"`
 	NextTokenBlockTimestamp int64  `fauna:"next_token_block_timestamp" json:"next_token_block_timestamp"`
 }
+
+type OpenerGameRoundInfo struct {
+	FaunadbCommon `fauna:"-" json:"-"`
+
+	RoundNumber        int64  `fauna:"round_number" json:"round_number"`
+	BuilderTokenAmount string `fauna:"builder_token_amount" json:"builder_token_amount"`
+	EthAmount          string `fauna:"eth_amount" json:"eth_amount"`
+	StartTimestamp     int64  `fauna:"start_timestamp" json:"start_timestamp"`
+	EndTimestamp       int64  `fauna:"end_timestamp" json:"end_timestamp"`
+	HasWinner          bool   `fauna:"has_winner" json:"has_winner"`
+	WinnerTokenId      int64  `fauna:"winner_token_id" json:"winner_token_id"`
+}

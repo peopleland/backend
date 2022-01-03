@@ -21,6 +21,9 @@ const (
 	OpenerRecordCollectionName       = "opener_records"
 	OpenerRecordSortTokenIdDescIndex = "opener_records_sort_token_id_desc"
 	OpenerRecordByTokenId            = "opener_records_by_token_id"
+
+	OpenerGameRoundInfoCollectionName     = "opener_game_round_infos"
+	OpenerGameRoundInfoByRoundNumberIndex = "opener_game_round_infos_by_round_number"
 )
 
 type FaunadbCommon struct {

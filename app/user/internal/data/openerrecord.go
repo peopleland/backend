@@ -115,23 +115,15 @@ func (repo *openerRecordRepo) SaveOpenerRecord(ctx context.Context, tokenId int6
 	return record, nil
 }
 
-func (repo *openerRecordRepo) GetOpenerRecord(_ context.Context, tokenId int64) (*model.OpenerRecord, error) {
-	result, err := repo.data.faunaClient.Query(
-		f.Get(
-			f.MatchTerm(
-				f.Index(model.OpenerRecordByTokenId),
-				tokenId,
-			),
-		))
+func (repo *openerRecordRepo) GetNewest(ctx context.Context) (*model.OpenerRecord, error) {
+	list, err := repo.getListPaginate(ctx, f.Size(1))
 	if err != nil {
 		return nil, err
 	}
-	var record model.OpenerRecord
-	err = model.ParseResult(result, &record)
-	if err != nil {
-		return nil, err
+	if len(list) > 0 {
+		return list[0], nil
 	}
-	return &record, nil
+	return nil, nil
 }
 
 // GetListPaginateFirstPage first page
@@ -141,7 +133,7 @@ func (repo *openerRecordRepo) GetListPaginateFirstPage(ctx context.Context, page
 
 // GetListPaginateAfter next page
 func (repo *openerRecordRepo) GetListPaginateAfter(ctx context.Context, pageSize int64, afterTokenId int64) ([]*model.OpenerRecord, error) {
-	record, err := repo.GetOpenerRecord(ctx, afterTokenId)
+	record, err := repo.GetOpenerRecordByTokenId(ctx, afterTokenId)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +151,7 @@ func (repo *openerRecordRepo) GetListPaginateAfter(ctx context.Context, pageSize
 
 // GetListPaginateBefore prev page
 func (repo *openerRecordRepo) GetListPaginateBefore(ctx context.Context, pageSize int64, beforeTokenId int64) ([]*model.OpenerRecord, error) {
-	record, err := repo.GetOpenerRecord(ctx, beforeTokenId)
+	record, err := repo.GetOpenerRecordByTokenId(ctx, beforeTokenId)
 	if err != nil {
 		return nil, err
 	}

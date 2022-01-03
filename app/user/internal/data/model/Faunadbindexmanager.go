@@ -4,24 +4,45 @@ import (
 	f "github.com/fauna/faunadb-go/v4/faunadb"
 )
 
-func DropMintRecordCollection(fc *f.FaunaClient) {
-	_, err := fc.Query(f.Delete(f.Collection(MintRecordCollectionName)))
-	if err != nil {
-		panic(err)
-	}
+type FaunaMetaManager struct {
+	fc *f.FaunaClient
 }
 
-func CreateMintRecordMeta(fc *f.FaunaClient) {
-	_, err := fc.Query(
+func (manager *FaunaMetaManager) createCollectionByName(name string) {
+	_, err := manager.fc.Query(
 		f.CreateCollection(
-			f.Obj{"name": MintRecordCollectionName},
+			f.Obj{"name": name},
 		),
 	)
 	if err != nil {
 		panic(err)
 	}
+}
 
-	_, err = fc.Query(
+func (manager *FaunaMetaManager) dropCollectionByName(name string) {
+	_, err := manager.fc.Query(f.Delete(f.Collection(name)))
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (manager *FaunaMetaManager) DropMintRecordCollection() {
+	manager.dropCollectionByName(MintRecordCollectionName)
+}
+
+func (manager *FaunaMetaManager) DropOpenerRecordCollection() {
+	manager.dropCollectionByName(OpenerRecordCollectionName)
+}
+
+func (manager *FaunaMetaManager) DropOpenerGameRoundInfoCollection() {
+	manager.dropCollectionByName(OpenerGameRoundInfoCollectionName)
+}
+
+// CreateMintRecordMeta mint_records
+func (manager *FaunaMetaManager) CreateMintRecordMeta() {
+	manager.createCollectionByName(MintRecordCollectionName)
+
+	_, err := manager.fc.Query(
 		f.CreateIndex(f.Obj{
 			"name":   MintRecordsByMintAddressAndXAndYSortTsDescIndex,
 			"source": f.Collection(MintRecordCollectionName),
@@ -40,24 +61,10 @@ func CreateMintRecordMeta(fc *f.FaunaClient) {
 	}
 }
 
-func DropOpenerRecordCollection(fc *f.FaunaClient) {
-	_, err := fc.Query(f.Delete(f.Collection(OpenerRecordCollectionName)))
-	if err != nil {
-		panic(err)
-	}
-}
+func (manager *FaunaMetaManager) CreateOpenerRecordMeta() {
+	manager.createCollectionByName(OpenerRecordCollectionName)
 
-func CreateOpenerRecordMeta(fc *f.FaunaClient) {
-	_, err := fc.Query(
-		f.CreateCollection(
-			f.Obj{"name": OpenerRecordCollectionName},
-		),
-	)
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = fc.Query(
+	_, err := manager.fc.Query(
 		f.CreateIndex(f.Obj{
 			"name":   OpenerRecordByTokenId,
 			"unique": true,
@@ -70,13 +77,30 @@ func CreateOpenerRecordMeta(fc *f.FaunaClient) {
 		panic(err)
 	}
 
-	_, err = fc.Query(
+	_, err = manager.fc.Query(
 		f.CreateIndex(f.Obj{
 			"name":   OpenerRecordSortTokenIdDescIndex,
 			"source": f.Collection(OpenerRecordCollectionName),
 			"values": f.Arr{
 				f.Obj{"field": f.Arr{"data", "token_id"}, "reverse": true},
 				f.Obj{"field": "ref"},
+			},
+		}))
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (manager *FaunaMetaManager) CreateOpenerGameRoundInfoMeta() {
+	manager.createCollectionByName(OpenerGameRoundInfoCollectionName)
+
+	_, err := manager.fc.Query(
+		f.CreateIndex(f.Obj{
+			"name":   OpenerGameRoundInfoByRoundNumberIndex,
+			"unique": true,
+			"source": f.Collection(OpenerGameRoundInfoCollectionName),
+			"terms": f.Arr{
+				f.Obj{"field": f.Arr{"data", "round_number"}},
 			},
 		}))
 	if err != nil {

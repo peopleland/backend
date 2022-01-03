@@ -185,6 +185,22 @@
         ]
       }
     },
+    "/user/v1/opener_game/round_info": {
+      "get": {
+        "operationId": "User_GetOpenerGameRoundInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetOpenerGameRoundInfoResponse"
+            }
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      }
+    },
     "/user/v1/profile": {
       "get": {
         "operationId": "User_GetProfile",
@@ -257,6 +273,17 @@
         }
       }
     },
+    "v1GetOpenerGameRoundInfoResponse": {
+      "type": "object",
+      "properties": {
+        "info": {
+          "$ref": "#/definitions/v1OpenerGameRoundInfo"
+        },
+        "opener_record": {
+          "$ref": "#/definitions/v1OpenerRecord"
+        }
+      }
+    },
     "v1LoginPayLoad": {
       "type": "object",
       "properties": {
@@ -321,6 +348,36 @@
           "items": {
             "$ref": "#/definitions/v1OpenerRecord"
           }
+        }
+      }
+    },
+    "v1OpenerGameRoundInfo": {
+      "type": "object",
+      "properties": {
+        "round_number": {
+          "type": "string",
+          "format": "int64"
+        },
+        "builder_token_amount": {
+          "type": "string"
+        },
+        "eth_amount": {
+          "type": "string"
+        },
+        "start_timestamp": {
+          "type": "string",
+          "format": "int64"
+        },
+        "end_timestamp": {
+          "type": "string",
+          "format": "int64"
+        },
+        "has_winner": {
+          "type": "boolean"
+        },
+        "winner_token_id": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },

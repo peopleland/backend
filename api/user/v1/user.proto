@@ -53,6 +53,11 @@ service User {
       get: "/user/v1/opener_game/opener_records"
     };
   }
+  rpc GetOpenerGameRoundInfo (GetOpenerGameRoundInfoPayLoad) returns (GetOpenerGameRoundInfoResponse) {
+    option (google.api.http) = {
+      get: "/user/v1/opener_game/round_info"
+    };
+  }
 }
 
 message UserProfile {
@@ -129,4 +134,21 @@ message OpenerRecord {
   string invited_address = 8;
   string invited_user_name = 9;
   int64  next_token_block_timestamp = 10;
+}
+
+message GetOpenerGameRoundInfoPayLoad {}
+
+message GetOpenerGameRoundInfoResponse {
+  OpenerGameRoundInfo info = 1;
+  OpenerRecord opener_record = 2;
+}
+
+message OpenerGameRoundInfo {
+  int64 round_number = 1;
+  string builder_token_amount = 2;
+  string eth_amount = 3;
+  int64 start_timestamp = 4;
+  int64 end_timestamp = 5;
+  bool has_winner = 6;
+  int64 winner_token_id = 7;
 }
