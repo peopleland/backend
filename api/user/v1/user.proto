@@ -1,0 +1,236 @@
+syntax = "proto3";
+
+package api.user.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "backend/api/user/v1;v1";
+
+service User {
+  rpc Login (LoginPayLoad) returns (LoginResponse) {
+    option (google.api.http) = {
+      post: "/user/v1/login",
+      body: "*"
+    };
+  }
+  rpc GetProfile (GetProfilePayLoad) returns (UserProfile) {
+    option (google.api.http) = {
+      get: "/user/v1/profile",
+    };
+  }
+  rpc PutProfile (PutProfilePayLoad) returns (UserProfile) {
+    option (google.api.http) = {
+      put: "/user/v1/profile",
+      body: "*"
+    };
+  }
+  rpc ConnectTwitter (ConnectTwitterPayLoad) returns (UserProfile) {
+    option (google.api.http) = {
+      put: "/user/v1/connect/twitter",
+      body: "*"
+    };
+  }
+  rpc ConnectTelegram (ConnectTelegramPayLoad) returns (ConnectTelegramResponse) {
+    option (google.api.http) = {
+      put: "/user/v1/connect/telegram",
+      body: "*"
+    };
+  }
+  rpc ConnectDiscord (ConnectDiscordPayLoad) returns (ConnectDiscordResponse) {
+    option (google.api.http) = {
+      put: "/user/v1/connect/discord",
+      body: "*"
+    };
+  }
+  rpc TelegramBotDMWebhooks (TelegramBotDMWebhooksPayLoad) returns (TelegramBotDMWebhooksResponse) {
+    option (google.api.http) = {
+      post: "/user/v1/telegram/webhooks/dm",
+      body: "*"
+    };
+  }
+  rpc GenVerifyCode (GenVerifyCodePayLoad) returns (GenVerifyCodeResponse) {
+    option (google.api.http) = {
+      put: "/user/v1/gen_verify_code",
+      body: "*"
+    };
+  }
+
+  rpc OpenerGameMintRecord (OpenerGameMintRecordPayLoad) returns (OpenerGameMintRecordResponse) {
+    option (google.api.http) = {
+      post: "/user/v1/opener_game/mint_record",
+      body: "*"
+    };
+  }
+  rpc OpenerGameOpenerRecordList (OpenerGameOpenerRecordListPayLoad) returns (OpenerGameOpenerRecordListResponse) {
+    option (google.api.http) = {
+      get: "/user/v1/opener_game/opener_records"
+    };
+  }
+  rpc GetOpenerGameRoundInfo (GetOpenerGameRoundInfoPayLoad) returns (GetOpenerGameRoundInfoResponse) {
+    option (google.api.http) = {
+      get: "/user/v1/opener_game/round_info"
+    };
+  }
+
+  rpc DisconnectSocial (DisconnectSocialPayLoad) returns (DisconnectSocialResponse) {
+    option (google.api.http) = {
+      post: "/user/v1/social/disconnect",
+      body: "*"
+    };
+  }
+}
+
+message DiscordInfo {
+  string id = 1;
+  string username = 2;
+  string discriminator = 3;
+  string avatar = 4;
+}
+
+message TelegramInfo {
+  int64 id = 1;
+  string first_name = 2;
+  string username = 3;
+  string language_code = 4;
+}
+
+message UserProfile {
+  string id = 1;
+  string address = 2;
+  string name = 3;
+  string twitter = 4;
+  TelegramInfo telegram = 5;
+  DiscordInfo discord = 6;
+}
+
+message LoginPayLoad {
+  string address = 1;
+  string signature = 2;
+  string origin_message = 3;
+}
+
+message LoginResponse {
+  string jwt = 1;
+}
+
+message GetProfilePayLoad {}
+message PutProfilePayLoad {
+  string name = 1;
+  string address = 2;
+}
+
+message ConnectTwitterPayLoad {
+  string twitter = 1;
+}
+
+message ConnectTelegramPayLoad {}
+message ConnectTelegramResponse {
+  string code = 1;
+}
+
+message GenVerifyCodePayLoad {}
+message GenVerifyCodeResponse {
+  string verify_code = 1;
+}
+
+message OpenerGameMintRecordPayLoad {
+  string mintAddress = 1;
+  string x = 2;
+  string y = 3;
+  string verify_code = 4;
+}
+
+message OpenerGameMintRecordResponse {
+  string mintAddress = 1;
+  string x = 2;
+  string y = 3;
+  string invited_userid = 4;
+}
+
+message OpenerGameOpenerRecordListPayLoad {
+  optional int64 pageSize = 1;
+  optional int64 afterTokenId = 2;
+  optional int64 beforeTokenId = 3;
+}
+
+message OpenerGameOpenerRecordListResponse {
+  repeated OpenerRecord opener_records = 1;
+}
+
+message OpenerRecord {
+  string mint_address = 1;
+  string mint_user_name = 2;
+  int64  token_id = 3;
+  string x = 4;
+  string y = 5;
+  int64 block_number = 6;
+  int64 block_timestamp = 7;
+  string invited_address = 8;
+  string invited_user_name = 9;
+  int64  next_token_block_timestamp = 10;
+}
+
+message GetOpenerGameRoundInfoPayLoad {}
+
+message GetOpenerGameRoundInfoResponse {
+  OpenerGameRoundInfo info = 1;
+  OpenerRecord opener_record = 2;
+}
+
+message OpenerGameRoundInfo {
+  int64 round_number = 1;
+  string builder_token_amount = 2;
+  string eth_amount = 3;
+  int64 start_timestamp = 4;
+  int64 end_timestamp = 5;
+  bool has_winner = 6;
+  int64 winner_token_id = 7;
+}
+
+message ConnectDiscordPayLoad {
+  string code = 1;
+  string redirect_uri = 2;
+}
+
+message ConnectDiscordResponse {}
+
+message TelegramDM {
+  message DMFrom {
+    int64 id = 1;
+    bool is_bot = 2;
+    string first_name = 3;
+    string username = 4;
+    string language_code = 5;
+  }
+  message DMChat {
+    int64 id = 1;
+    string first_name = 2;
+    string username = 3;
+    string type = 4;
+  }
+  int64 message_id = 1;
+  DMFrom from = 2;
+  DMChat chat = 3;
+  int64 date = 4;
+  string text = 5;
+}
+
+message TelegramBotDMWebhooksPayLoad {
+  int64 update_id = 1;
+  TelegramDM message = 2;
+}
+
+message TelegramBotDMWebhooksResponse {}
+
+enum SocialType {
+  TWITTER = 0;
+  DISCORD = 1;
+  TELEGRAM = 2;
+}
+
+message DisconnectSocialPayLoad {
+  SocialType social = 1;
+}
+
+message DisconnectSocialResponse {}
+
