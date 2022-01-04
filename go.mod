@@ -17,6 +17,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/googleapis/google-cloud-go-testing v0.0.0-20210719221736-1c9a4c676720 // indirect
 	github.com/gorilla/mux v1.8.0
+	github.com/hasura/go-graphql-client v0.6.0 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/labstack/echo/v4 v4.2.1
 	github.com/parnurzeal/gorequest v0.2.16

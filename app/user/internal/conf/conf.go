@@ -18,4 +18,6 @@ type Config struct {
 
 	EthClientRawUrl           string `mapstructure:"PEOPLELAND_ETH_CLIENT_RAW_URL"`
 	PeopleLandContractAddress string `mapstructure:"PEOPLELAND_CONTRACT_ADDRESS"`
+
+	PeopleLandContractTheGraphApiUrl string `mapstructure:"PEOPLELAND_CONTRACT_THE_GRAPH_API_URL"`
 }
