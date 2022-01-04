@@ -54,6 +54,24 @@ service User {
       body: "*"
     };
   }
+
+  rpc OpenerGameMintRecord (OpenerGameMintRecordPayLoad) returns (OpenerGameMintRecordResponse) {
+    option (google.api.http) = {
+      post: "/user/v1/opener_game/mint_record",
+      body: "*"
+    };
+  }
+  rpc OpenerGameOpenerRecordList (OpenerGameOpenerRecordListPayLoad) returns (OpenerGameOpenerRecordListResponse) {
+    option (google.api.http) = {
+      get: "/user/v1/opener_game/opener_records"
+    };
+  }
+  rpc GetOpenerGameRoundInfo (GetOpenerGameRoundInfoPayLoad) returns (GetOpenerGameRoundInfoResponse) {
+    option (google.api.http) = {
+      get: "/user/v1/opener_game/round_info"
+    };
+  }
+
   rpc DisconnectSocial (DisconnectSocialPayLoad) returns (DisconnectSocialResponse) {
     option (google.api.http) = {
       post: "/user/v1/social/disconnect",
@@ -115,6 +133,60 @@ message GenVerifyCodeResponse {
   string verify_code = 1;
 }
 
+message OpenerGameMintRecordPayLoad {
+  string mintAddress = 1;
+  string x = 2;
+  string y = 3;
+  string verify_code = 4;
+}
+
+message OpenerGameMintRecordResponse {
+  string mintAddress = 1;
+  string x = 2;
+  string y = 3;
+  string invited_userid = 4;
+}
+
+message OpenerGameOpenerRecordListPayLoad {
+  optional int64 pageSize = 1;
+  optional int64 afterTokenId = 2;
+  optional int64 beforeTokenId = 3;
+}
+
+message OpenerGameOpenerRecordListResponse {
+  repeated OpenerRecord opener_records = 1;
+}
+
+message OpenerRecord {
+  string mint_address = 1;
+  string mint_user_name = 2;
+  int64  token_id = 3;
+  string x = 4;
+  string y = 5;
+  int64 block_number = 6;
+  int64 block_timestamp = 7;
+  string invited_address = 8;
+  string invited_user_name = 9;
+  int64  next_token_block_timestamp = 10;
+}
+
+message GetOpenerGameRoundInfoPayLoad {}
+
+message GetOpenerGameRoundInfoResponse {
+  OpenerGameRoundInfo info = 1;
+  OpenerRecord opener_record = 2;
+}
+
+message OpenerGameRoundInfo {
+  int64 round_number = 1;
+  string builder_token_amount = 2;
+  string eth_amount = 3;
+  int64 start_timestamp = 4;
+  int64 end_timestamp = 5;
+  bool has_winner = 6;
+  int64 winner_token_id = 7;
+}
+
 message ConnectDiscordPayLoad {
   string code = 1;
   string redirect_uri = 2;
@@ -161,3 +233,4 @@ message DisconnectSocialPayLoad {
 }
 
 message DisconnectSocialResponse {}
+

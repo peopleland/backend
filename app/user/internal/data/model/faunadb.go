@@ -8,12 +8,23 @@ import (
 )
 
 const (
-	UserCollectionName  = "users"
-	UsersByAddressIndex = "users_by_address"
+	UserCollectionName     = "users"
+	UsersByAddressIndex    = "users_by_address"
+	UsersByVerifyCodeIndex = "users_by_verify_code"
 
 	TelegramVerifyCollectionName = "telegram_verify"
 	TelegramVerifyByUserIdIndex  = "telegram_verify_by_userid"
 	TelegramVerifyByCodeIndex    = "telegram_verify_by_code"
+
+	MintRecordCollectionName                        = "mint_records"
+	MintRecordsByMintAddressAndXAndYSortTsDescIndex = "mint_records_by_mint_address_and_x_and_y_sort_ts_desc"
+
+	OpenerRecordCollectionName       = "opener_records"
+	OpenerRecordSortTokenIdDescIndex = "opener_records_sort_token_id_desc"
+	OpenerRecordByTokenId            = "opener_records_by_token_id"
+
+	OpenerGameRoundInfoCollectionName     = "opener_game_round_infos"
+	OpenerGameRoundInfoByRoundNumberIndex = "opener_game_round_infos_by_round_number"
 )
 
 type FaunadbCommon struct {

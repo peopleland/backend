@@ -23,8 +23,11 @@ type UserLambdaServer interface {
 	ConnectTwitter(context.Context, *ConnectTwitterPayLoad) (*UserProfile, error)
 	DisconnectSocial(context.Context, *DisconnectSocialPayLoad) (*DisconnectSocialResponse, error)
 	GenVerifyCode(context.Context, *GenVerifyCodePayLoad) (*GenVerifyCodeResponse, error)
+	GetOpenerGameRoundInfo(context.Context, *GetOpenerGameRoundInfoPayLoad) (*GetOpenerGameRoundInfoResponse, error)
 	GetProfile(context.Context, *GetProfilePayLoad) (*UserProfile, error)
 	Login(context.Context, *LoginPayLoad) (*LoginResponse, error)
+	OpenerGameMintRecord(context.Context, *OpenerGameMintRecordPayLoad) (*OpenerGameMintRecordResponse, error)
+	OpenerGameOpenerRecordList(context.Context, *OpenerGameOpenerRecordListPayLoad) (*OpenerGameOpenerRecordListResponse, error)
 	PutProfile(context.Context, *PutProfilePayLoad) (*UserProfile, error)
 	TelegramBotDMWebhooks(context.Context, *TelegramBotDMWebhooksPayLoad) (*TelegramBotDMWebhooksResponse, error)
 }
@@ -39,6 +42,9 @@ func RegisterUserLambdaServer(s *http.Server, srv UserLambdaServer) {
 	g.PUTX("/user/v1/connect/discord", _User_ConnectDiscord0_Lambda_Handler(srv))
 	g.POSTX("/user/v1/telegram/webhooks/dm", _User_TelegramBotDMWebhooks0_Lambda_Handler(srv))
 	g.PUTX("/user/v1/gen_verify_code", _User_GenVerifyCode0_Lambda_Handler(srv))
+	g.POSTX("/user/v1/opener_game/mint_record", _User_OpenerGameMintRecord0_Lambda_Handler(srv))
+	g.GETX("/user/v1/opener_game/opener_records", _User_OpenerGameOpenerRecordList0_Lambda_Handler(srv))
+	g.GETX("/user/v1/opener_game/round_info", _User_GetOpenerGameRoundInfo0_Lambda_Handler(srv))
 	g.POSTX("/user/v1/social/disconnect", _User_DisconnectSocial0_Lambda_Handler(srv))
 }
 
@@ -250,6 +256,84 @@ func _User_GenVerifyCode0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Con
 	}
 }
 
+func _User_OpenerGameMintRecord0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in OpenerGameMintRecordPayLoad
+		if err := ctx.Bind(&in); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//http.SetOperation(ctx,"/api.user.v1.User/OpenerGameMintRecord")
+		//h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		//	return srv.OpenerGameMintRecord(ctx, req.(*OpenerGameMintRecordPayLoad))
+		//})
+		//out, err := h(ctx, &in)
+		out, err := srv.OpenerGameMintRecord(ctx.Ctx, &in)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//reply := out.(*OpenerGameMintRecordResponse)
+		return ctx.JSON(http.StatusOK, map[string]interface{}{
+			"data": out,
+		})
+	}
+}
+
+func _User_OpenerGameOpenerRecordList0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in OpenerGameOpenerRecordListPayLoad
+		if err := ctx.BindQuery(&in); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//http.SetOperation(ctx,"/api.user.v1.User/OpenerGameOpenerRecordList")
+		//h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		//	return srv.OpenerGameOpenerRecordList(ctx, req.(*OpenerGameOpenerRecordListPayLoad))
+		//})
+		//out, err := h(ctx, &in)
+		out, err := srv.OpenerGameOpenerRecordList(ctx.Ctx, &in)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//reply := out.(*OpenerGameOpenerRecordListResponse)
+		return ctx.JSON(http.StatusOK, map[string]interface{}{
+			"data": out,
+		})
+	}
+}
+
+func _User_GetOpenerGameRoundInfo0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetOpenerGameRoundInfoPayLoad
+		if err := ctx.BindQuery(&in); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//http.SetOperation(ctx,"/api.user.v1.User/GetOpenerGameRoundInfo")
+		//h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		//	return srv.GetOpenerGameRoundInfo(ctx, req.(*GetOpenerGameRoundInfoPayLoad))
+		//})
+		//out, err := h(ctx, &in)
+		out, err := srv.GetOpenerGameRoundInfo(ctx.Ctx, &in)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//reply := out.(*GetOpenerGameRoundInfoResponse)
+		return ctx.JSON(http.StatusOK, map[string]interface{}{
+			"data": out,
+		})
+	}
+}
+
 func _User_DisconnectSocial0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in DisconnectSocialPayLoad
@@ -289,9 +373,15 @@ func _User_DisconnectSocial0_Lambda_Handler(srv UserLambdaServer) func(ctx http.
 //
 //	GenVerifyCode(ctx context.Context, req *GenVerifyCodePayLoad, opts ...http.CallOption) (rsp *GenVerifyCodeResponse, err error)
 //
+//	GetOpenerGameRoundInfo(ctx context.Context, req *GetOpenerGameRoundInfoPayLoad, opts ...http.CallOption) (rsp *GetOpenerGameRoundInfoResponse, err error)
+//
 //	GetProfile(ctx context.Context, req *GetProfilePayLoad, opts ...http.CallOption) (rsp *UserProfile, err error)
 //
 //	Login(ctx context.Context, req *LoginPayLoad, opts ...http.CallOption) (rsp *LoginResponse, err error)
+//
+//	OpenerGameMintRecord(ctx context.Context, req *OpenerGameMintRecordPayLoad, opts ...http.CallOption) (rsp *OpenerGameMintRecordResponse, err error)
+//
+//	OpenerGameOpenerRecordList(ctx context.Context, req *OpenerGameOpenerRecordListPayLoad, opts ...http.CallOption) (rsp *OpenerGameOpenerRecordListResponse, err error)
 //
 //	PutProfile(ctx context.Context, req *PutProfilePayLoad, opts ...http.CallOption) (rsp *UserProfile, err error)
 //
@@ -373,6 +463,19 @@ func _User_DisconnectSocial0_Lambda_Handler(srv UserLambdaServer) func(ctx http.
 //	return &out, err
 //}
 //
+//func (c *UserLambdaClientImpl) GetOpenerGameRoundInfo(ctx context.Context, in *GetOpenerGameRoundInfoPayLoad, opts ...http.CallOption) (*GetOpenerGameRoundInfoResponse, error) {
+//	var out GetOpenerGameRoundInfoResponse
+//	pattern := "/user/v1/opener_game/round_info"
+//	path := binding.EncodeURL(pattern, in, true)
+//	opts = append(opts, http.Operation("/api.user.v1.User/GetOpenerGameRoundInfo"))
+//	opts = append(opts, http.PathTemplate(pattern))
+//	//	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+//	//	if err != nil {
+//		return nil, err
+//	}
+//	return &out, err
+//}
+//
 //func (c *UserLambdaClientImpl) GetProfile(ctx context.Context, in *GetProfilePayLoad, opts ...http.CallOption) (*UserProfile, error) {
 //	var out UserProfile
 //	pattern := "/user/v1/profile"
@@ -393,6 +496,32 @@ func _User_DisconnectSocial0_Lambda_Handler(srv UserLambdaServer) func(ctx http.
 //	opts = append(opts, http.Operation("/api.user.v1.User/Login"))
 //	opts = append(opts, http.PathTemplate(pattern))
 //	//	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+//	//	if err != nil {
+//		return nil, err
+//	}
+//	return &out, err
+//}
+//
+//func (c *UserLambdaClientImpl) OpenerGameMintRecord(ctx context.Context, in *OpenerGameMintRecordPayLoad, opts ...http.CallOption) (*OpenerGameMintRecordResponse, error) {
+//	var out OpenerGameMintRecordResponse
+//	pattern := "/user/v1/opener_game/mint_record"
+//	path := binding.EncodeURL(pattern, in, false)
+//	opts = append(opts, http.Operation("/api.user.v1.User/OpenerGameMintRecord"))
+//	opts = append(opts, http.PathTemplate(pattern))
+//	//	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+//	//	if err != nil {
+//		return nil, err
+//	}
+//	return &out, err
+//}
+//
+//func (c *UserLambdaClientImpl) OpenerGameOpenerRecordList(ctx context.Context, in *OpenerGameOpenerRecordListPayLoad, opts ...http.CallOption) (*OpenerGameOpenerRecordListResponse, error) {
+//	var out OpenerGameOpenerRecordListResponse
+//	pattern := "/user/v1/opener_game/opener_records"
+//	path := binding.EncodeURL(pattern, in, true)
+//	opts = append(opts, http.Operation("/api.user.v1.User/OpenerGameOpenerRecordList"))
+//	opts = append(opts, http.PathTemplate(pattern))
+//	//	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 //	//	if err != nil {
 //		return nil, err
 //	}

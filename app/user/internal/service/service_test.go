@@ -6,6 +6,7 @@ import (
 	mock_biz "backend/app/user/internal/biz/mock"
 	"backend/app/user/internal/conf"
 	dt "backend/app/user/internal/data"
+	"backend/app/user/internal/data/model"
 	"backend/pkg/jwt"
 	"context"
 	"log"
@@ -242,4 +243,192 @@ func TestUserService_GenVerifyCode(t *testing.T) {
 			assert.Empty(t, err)
 		})
 	}
+}
+
+func TestUserService_OpenerGameMintRecord(t *testing.T) {
+	d, _ := dt.NewData(config, logger)
+	userRepo := dt.NewUserRepo(d, logger)
+	twitterRepo := dt.NewTwitterRepo(config)
+	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
+	mintRecordRepo := dt.NewMintRecordRepo(d, logger)
+	openerRecordRepo := dt.NewOpenerRecordRepo(d, logger)
+	openerGameRoundInfoRepo := dt.NewOpenerGameRoundInfoRepo(d, logger)
+	discordRepo := dt.NewDiscordRepo(config)
+
+	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, discordRepo, peopleLandContractRepo, config, logger)
+	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, config, logger)
+
+	us := &UserService{
+		uc:     userUseCase,
+		ogc:    openerGameCase,
+		logger: logger,
+		conf:   config,
+	}
+
+	ctx := context.Background()
+
+	address := "0x1111111111111111111111111111111111111111"
+	user, _ := userRepo.FindOrCreateUser(context.Background(), address)
+
+	tests := []struct {
+		name string
+		args api.OpenerGameMintRecordPayLoad
+	}{
+		{"1", api.OpenerGameMintRecordPayLoad{
+			MintAddress: "123",
+			X:           "1",
+			Y:           "1",
+			VerifyCode:  user.VerifyCode,
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := us.OpenerGameMintRecord(ctx, &tt.args)
+			assert.Equal(t, got.InvitedUserid, user.Ref.ID)
+			assert.Empty(t, err)
+		})
+	}
+}
+
+func TestUserService_OpenerGameOpenerRecordList(t *testing.T) {
+	d, _ := dt.NewData(config, logger)
+	userRepo := dt.NewUserRepo(d, logger)
+	twitterRepo := dt.NewTwitterRepo(config)
+	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
+	mintRecordRepo := dt.NewMintRecordRepo(d, logger)
+	openerRecordRepo := dt.NewOpenerRecordRepo(d, logger)
+	openerGameRoundInfoRepo := dt.NewOpenerGameRoundInfoRepo(d, logger)
+	discordRepo := dt.NewDiscordRepo(config)
+
+	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, discordRepo, peopleLandContractRepo, config, logger)
+	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, config, logger)
+
+	us := &UserService{
+		uc:     userUseCase,
+		ogc:    openerGameCase,
+		logger: logger,
+		conf:   config,
+	}
+
+	ctx := context.Background()
+
+	_, err := openerRecordRepo.SaveOpenerRecord(ctx, 1, &model.OpenerRecord{
+		MintAddress:    "0x1111111111111111111111111111111111111111",
+		TokenId:        1,
+		X:              "1",
+		Y:              "2",
+		BlockNumber:    1,
+		BlockTimestamp: 1,
+		InvitedAddress: "0x40fcc42c5a25945c02b19204d082a67591d30cf6",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	var pageSize int64 = 20
+
+	tests := []struct {
+		name string
+		args api.OpenerGameOpenerRecordListPayLoad
+	}{
+		{"1", api.OpenerGameOpenerRecordListPayLoad{
+			PageSize: &pageSize,
+		}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := us.OpenerGameOpenerRecordList(ctx, &tt.args)
+			assert.GreaterOrEqual(t, len(got.OpenerRecords), 1)
+			assert.Empty(t, err)
+		})
+	}
+}
+
+func TestUserService_GetOpenerGameRoundInfo(t *testing.T) {
+	d, _ := dt.NewData(config, logger)
+	userRepo := dt.NewUserRepo(d, logger)
+	twitterRepo := dt.NewTwitterRepo(config)
+	peopleLandContractRepo := dt.NewPeopleLandContractRepo(config)
+	mintRecordRepo := dt.NewMintRecordRepo(d, logger)
+	openerRecordRepo := dt.NewOpenerRecordRepo(d, logger)
+	openerGameRoundInfoRepo := dt.NewOpenerGameRoundInfoRepo(d, logger)
+	discordRepo := dt.NewDiscordRepo(config)
+
+	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, discordRepo, peopleLandContractRepo, config, logger)
+	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, config, logger)
+
+	us := &UserService{
+		uc:     userUseCase,
+		ogc:    openerGameCase,
+		logger: logger,
+		conf:   config,
+	}
+
+	ctx := context.Background()
+
+	_, err := openerRecordRepo.SaveOpenerRecord(ctx, 1, &model.OpenerRecord{
+		MintAddress:    "0x1111111111111111111111111111111111111111",
+		TokenId:        1,
+		X:              "1",
+		Y:              "2",
+		BlockNumber:    1,
+		BlockTimestamp: 1,
+		InvitedAddress: "0x40fcc42c5a25945c02b19204d082a67591d30cf6",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = openerRecordRepo.SaveOpenerRecord(ctx, 2, &model.OpenerRecord{
+		MintAddress:    "0x1111111111111111111111111111111111111111",
+		TokenId:        2,
+		X:              "2",
+		Y:              "3",
+		BlockNumber:    2,
+		BlockTimestamp: 2,
+		InvitedAddress: "0x40fcc42c5a25945c02b19204d082a67591d30cf6",
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = openerGameRoundInfoRepo.Save(ctx, 1, &model.OpenerGameRoundInfo{
+		RoundNumber:        1,
+		BuilderTokenAmount: "50000",
+		EthAmount:          "0.66",
+		StartTimestamp:     1,
+		EndTimestamp:       1000,
+		HasWinner:          false,
+		WinnerTokenId:      0,
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	load := &api.GetOpenerGameRoundInfoPayLoad{}
+	res, err := us.GetOpenerGameRoundInfo(ctx, load)
+	assert.Equal(t, res.Info.EthAmount, "0.66")
+	assert.Equal(t, res.OpenerRecord.MintAddress, "0x1111111111111111111111111111111111111111")
+	assert.Equal(t, res.OpenerRecord.TokenId, int64(2))
+
+	_, err = openerGameRoundInfoRepo.Save(ctx, 1, &model.OpenerGameRoundInfo{
+		RoundNumber:        1,
+		BuilderTokenAmount: "50000",
+		EthAmount:          "0.66",
+		StartTimestamp:     1,
+		EndTimestamp:       1000,
+		HasWinner:          true,
+		WinnerTokenId:      1,
+	})
+
+	if err != nil {
+		panic(err)
+	}
+
+	res, err = us.GetOpenerGameRoundInfo(ctx, load)
+	assert.Equal(t, res.Info.EthAmount, "0.66")
+	assert.Equal(t, res.OpenerRecord.MintAddress, "0x1111111111111111111111111111111111111111")
+	assert.Equal(t, res.OpenerRecord.TokenId, int64(1))
+
 }

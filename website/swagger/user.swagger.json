@@ -146,6 +146,87 @@
         ]
       }
     },
+    "/user/v1/opener_game/mint_record": {
+      "post": {
+        "operationId": "User_OpenerGameMintRecord",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1OpenerGameMintRecordResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1OpenerGameMintRecordPayLoad"
+            }
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/v1/opener_game/opener_records": {
+      "get": {
+        "operationId": "User_OpenerGameOpenerRecordList",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1OpenerGameOpenerRecordListResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "afterTokenId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          },
+          {
+            "name": "beforeTokenId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/v1/opener_game/round_info": {
+      "get": {
+        "operationId": "User_GetOpenerGameRoundInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetOpenerGameRoundInfoResponse"
+            }
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      }
+    },
     "/user/v1/profile": {
       "get": {
         "operationId": "User_GetProfile",
@@ -351,6 +432,17 @@
         }
       }
     },
+    "v1GetOpenerGameRoundInfoResponse": {
+      "type": "object",
+      "properties": {
+        "info": {
+          "$ref": "#/definitions/v1OpenerGameRoundInfo"
+        },
+        "opener_record": {
+          "$ref": "#/definitions/v1OpenerRecord"
+        }
+      }
+    },
     "v1LoginPayLoad": {
       "type": "object",
       "properties": {
@@ -370,6 +462,120 @@
       "properties": {
         "jwt": {
           "type": "string"
+        }
+      }
+    },
+    "v1OpenerGameMintRecordPayLoad": {
+      "type": "object",
+      "properties": {
+        "mintAddress": {
+          "type": "string"
+        },
+        "x": {
+          "type": "string"
+        },
+        "y": {
+          "type": "string"
+        },
+        "verify_code": {
+          "type": "string"
+        }
+      }
+    },
+    "v1OpenerGameMintRecordResponse": {
+      "type": "object",
+      "properties": {
+        "mintAddress": {
+          "type": "string"
+        },
+        "x": {
+          "type": "string"
+        },
+        "y": {
+          "type": "string"
+        },
+        "invited_userid": {
+          "type": "string"
+        }
+      }
+    },
+    "v1OpenerGameOpenerRecordListResponse": {
+      "type": "object",
+      "properties": {
+        "opener_records": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1OpenerRecord"
+          }
+        }
+      }
+    },
+    "v1OpenerGameRoundInfo": {
+      "type": "object",
+      "properties": {
+        "round_number": {
+          "type": "string",
+          "format": "int64"
+        },
+        "builder_token_amount": {
+          "type": "string"
+        },
+        "eth_amount": {
+          "type": "string"
+        },
+        "start_timestamp": {
+          "type": "string",
+          "format": "int64"
+        },
+        "end_timestamp": {
+          "type": "string",
+          "format": "int64"
+        },
+        "has_winner": {
+          "type": "boolean"
+        },
+        "winner_token_id": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "v1OpenerRecord": {
+      "type": "object",
+      "properties": {
+        "mint_address": {
+          "type": "string"
+        },
+        "mint_user_name": {
+          "type": "string"
+        },
+        "token_id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "x": {
+          "type": "string"
+        },
+        "y": {
+          "type": "string"
+        },
+        "block_number": {
+          "type": "string",
+          "format": "int64"
+        },
+        "block_timestamp": {
+          "type": "string",
+          "format": "int64"
+        },
+        "invited_address": {
+          "type": "string"
+        },
+        "invited_user_name": {
+          "type": "string"
+        },
+        "next_token_block_timestamp": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },

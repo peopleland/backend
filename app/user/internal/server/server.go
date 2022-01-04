@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-func NewLambdaServer(conf *conf.Config, userServ *service.UserService, logger *log.Logger) *http.Server {
+func NewLambdaServer(_ *conf.Config, userServ *service.UserService, _ *log.Logger) *http.Server {
 	serv := http.NewServer()
 
 	v1.RegisterUserLambdaServer(serv, userServ)

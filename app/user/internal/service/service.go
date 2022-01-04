@@ -13,13 +13,15 @@ import (
 
 type UserService struct {
 	uc     *biz.UserUseCase
+	ogc    *biz.OpenerGameCase
 	logger *log.Logger
 	conf   *conf.Config
 }
 
-func NewUserService(uc *biz.UserUseCase, conf *conf.Config, logger *log.Logger) *UserService {
+func NewUserService(uc *biz.UserUseCase, ogc *biz.OpenerGameCase, conf *conf.Config, logger *log.Logger) *UserService {
 	return &UserService{
 		uc:     uc,
+		ogc:    ogc,
 		logger: logger,
 		conf:   conf,
 	}
@@ -188,4 +190,93 @@ func (u *UserService) TelegramBotDMWebhooks(ctx context.Context, load *api.Teleg
 		return nil, err
 	}
 	return &api.TelegramBotDMWebhooksResponse{}, nil
+}
+
+func (u *UserService) OpenerGameMintRecord(ctx context.Context, load *api.OpenerGameMintRecordPayLoad) (*api.OpenerGameMintRecordResponse, error) {
+	mintRecord, err := u.ogc.CreateMintRecord(ctx, load.MintAddress, load.X, load.Y, load.VerifyCode)
+	if err != nil {
+		return nil, err
+	}
+	return &api.OpenerGameMintRecordResponse{
+		MintAddress:   mintRecord.MintAddress,
+		X:             mintRecord.X,
+		Y:             mintRecord.Y,
+		InvitedUserid: mintRecord.InviteUserid,
+	}, nil
+}
+
+func (u *UserService) OpenerGameOpenerRecordList(ctx context.Context, load *api.OpenerGameOpenerRecordListPayLoad) (*api.OpenerGameOpenerRecordListResponse, error) {
+	var pageSize int64 = 1000
+	var afterTokenId int64 = 0
+	var beforeTokenId int64 = 0
+	if load.PageSize != nil {
+		pageSize = *load.PageSize
+	}
+	if load.AfterTokenId != nil {
+		afterTokenId = *load.AfterTokenId
+	}
+	if load.BeforeTokenId != nil {
+		beforeTokenId = *load.BeforeTokenId
+	}
+	list, err := u.ogc.GetOpenerRecordList(ctx, pageSize, afterTokenId, beforeTokenId)
+	if err != nil {
+		return nil, err
+	}
+
+	openerRecords := make([]*api.OpenerRecord, 0)
+	for _, item := range list {
+		openerRecords = append(openerRecords, &api.OpenerRecord{
+			MintAddress:             item.MintAddress,
+			MintUserName:            item.MintUserName,
+			TokenId:                 item.TokenId,
+			X:                       item.X,
+			Y:                       item.Y,
+			BlockNumber:             item.BlockNumber,
+			BlockTimestamp:          item.BlockTimestamp,
+			InvitedAddress:          item.InvitedAddress,
+			InvitedUserName:         item.InvitedUserName,
+			NextTokenBlockTimestamp: item.NextTokenBlockTimestamp,
+		})
+	}
+
+	return &api.OpenerGameOpenerRecordListResponse{OpenerRecords: openerRecords}, nil
+}
+
+func (u *UserService) GetOpenerGameRoundInfo(ctx context.Context, load *api.GetOpenerGameRoundInfoPayLoad) (*api.GetOpenerGameRoundInfoResponse, error) {
+	info, record, err := u.ogc.GetOpenerGameRoundInfo(ctx, 1)
+	if err != nil {
+		return nil, err
+	}
+	var openerRecordResponse *api.OpenerRecord
+	var infoResponse *api.OpenerGameRoundInfo
+	if info != nil {
+		infoResponse = &api.OpenerGameRoundInfo{
+			RoundNumber:        info.RoundNumber,
+			BuilderTokenAmount: info.BuilderTokenAmount,
+			StartTimestamp:     info.StartTimestamp,
+			EthAmount:          info.EthAmount,
+			EndTimestamp:       info.EndTimestamp,
+			HasWinner:          info.HasWinner,
+			WinnerTokenId:      info.WinnerTokenId,
+		}
+	}
+	if record != nil {
+		openerRecordResponse = &api.OpenerRecord{
+			MintAddress:             record.MintAddress,
+			MintUserName:            record.MintUserName,
+			TokenId:                 record.TokenId,
+			X:                       record.X,
+			Y:                       record.Y,
+			BlockNumber:             record.BlockNumber,
+			BlockTimestamp:          record.BlockTimestamp,
+			InvitedAddress:          record.InvitedAddress,
+			InvitedUserName:         record.InvitedUserName,
+			NextTokenBlockTimestamp: record.NextTokenBlockTimestamp,
+		}
+	}
+
+	return &api.GetOpenerGameRoundInfoResponse{
+		Info:         infoResponse,
+		OpenerRecord: openerRecordResponse,
+	}, nil
 }
