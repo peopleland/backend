@@ -23,9 +23,10 @@ func initApp(conf *conf.Config, logger *log.Logger) (*http.Server, error) {
 	mintRecordRepo := data.NewMintRecordRepo(d, logger)
 	openerRecordRepo := data.NewOpenerRecordRepo(d, logger)
 	openerGameRoundInfoRepo := data.NewOpenerGameRoundInfoRepo(d, logger)
+	peopleLandContractTheGraphRepo := data.NewPeopleLandContractTheGraphRepo(conf)
 
 	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, discordRepo, peopleLandContractRepo, conf, logger)
-	mintRecordCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, conf, logger)
+	mintRecordCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, peopleLandContractTheGraphRepo, conf, logger)
 
 	userService := service.NewUserService(userUseCase, mintRecordCase, conf, logger)
 
