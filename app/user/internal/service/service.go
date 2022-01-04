@@ -4,6 +4,7 @@ import (
 	api "backend/api/user/v1"
 	"backend/app/user/internal/biz"
 	"backend/app/user/internal/conf"
+	"backend/app/user/internal/data/model"
 	"backend/pkg/jwt"
 	"context"
 	"errors"
@@ -51,7 +52,36 @@ func (u *UserService) Login(ctx context.Context, load *api.LoginPayLoad) (*api.L
 	return &api.LoginResponse{Jwt: *jwtStr}, nil
 }
 
-func (u *UserService) GetProfile(ctx context.Context, _ *api.GetProfilePayLoad) (*api.UserProfile, error) {
+func (u *UserService) parseProfile(profile *model.User) *api.UserProfile {
+	var discord api.DiscordInfo
+	var telegram api.TelegramInfo
+	if profile.Discord != nil {
+		discord = api.DiscordInfo{
+			Id:            profile.Discord.ID,
+			Username:      profile.Discord.Username,
+			Discriminator: profile.Discord.Discriminator,
+			Avatar:        profile.Discord.Avatar,
+		}
+	}
+	if profile.Telegram != nil {
+		telegram = api.TelegramInfo{
+			Id:           profile.Telegram.ID,
+			FirstName:    profile.Telegram.FirstName,
+			Username:     profile.Telegram.Username,
+			LanguageCode: profile.Telegram.LanguageCode,
+		}
+	}
+	return &api.UserProfile{
+		Address:  profile.Address,
+		Discord:  &discord,
+		Name:     profile.Name,
+		Twitter:  profile.Twitter,
+		Telegram: &telegram,
+		Id:       profile.Ref.ID,
+	}
+}
+
+func (u *UserService) GetProfile(ctx context.Context, load *api.GetProfilePayLoad) (*api.UserProfile, error) {
 	address, _, err := parseAuthorization(ctx, u.conf)
 	if err != nil {
 		return nil, err
@@ -60,12 +90,7 @@ func (u *UserService) GetProfile(ctx context.Context, _ *api.GetProfilePayLoad) 
 	if err != nil {
 		return nil, err
 	}
-	return &api.UserProfile{
-		Address: profile.Address,
-		Discord: "",
-		Name:    profile.Name,
-		Twitter: profile.Twitter,
-	}, nil
+	return u.parseProfile(profile), nil
 }
 
 func (u *UserService) PutProfile(ctx context.Context, load *api.PutProfilePayLoad) (*api.UserProfile, error) {
@@ -83,12 +108,7 @@ func (u *UserService) PutProfile(ctx context.Context, load *api.PutProfilePayLoa
 	if err != nil {
 		return nil, err
 	}
-	return &api.UserProfile{
-		Address: profile.Address,
-		Discord: "",
-		Name:    profile.Name,
-		Twitter: profile.Twitter,
-	}, nil
+	return u.parseProfile(profile), nil
 }
 
 func (u *UserService) ConnectTwitter(ctx context.Context, load *api.ConnectTwitterPayLoad) (*api.UserProfile, error) {
@@ -102,15 +122,10 @@ func (u *UserService) ConnectTwitter(ctx context.Context, load *api.ConnectTwitt
 		return nil, err
 	}
 
-	return &api.UserProfile{
-		Address: profile.Address,
-		Discord: "",
-		Name:    profile.Name,
-		Twitter: profile.Twitter,
-	}, nil
+	return u.parseProfile(profile), nil
 }
 
-func (u *UserService) ConnectTelegram(ctx context.Context, _ *api.ConnectTelegramPayLoad) (*api.ConnectTelegramResponse, error) {
+func (u *UserService) ConnectTelegram(ctx context.Context, load *api.ConnectTelegramPayLoad) (*api.ConnectTelegramResponse, error) {
 	_, userid, err := parseAuthorization(ctx, u.conf)
 	if err != nil {
 		return nil, err
@@ -123,7 +138,7 @@ func (u *UserService) ConnectTelegram(ctx context.Context, _ *api.ConnectTelegra
 	return &api.ConnectTelegramResponse{Code: code}, nil
 }
 
-func (u *UserService) GenVerifyCode(ctx context.Context, _ *api.GenVerifyCodePayLoad) (*api.GenVerifyCodeResponse, error) {
+func (u *UserService) GenVerifyCode(ctx context.Context, load *api.GenVerifyCodePayLoad) (*api.GenVerifyCodeResponse, error) {
 	_, userid, err := parseAuthorization(ctx, u.conf)
 	if err != nil {
 		return nil, err
@@ -135,6 +150,46 @@ func (u *UserService) GenVerifyCode(ctx context.Context, _ *api.GenVerifyCodePay
 	}
 
 	return &api.GenVerifyCodeResponse{VerifyCode: verifyCode}, nil
+}
+
+func (u *UserService) ConnectDiscord(ctx context.Context, load *api.ConnectDiscordPayLoad) (*api.ConnectDiscordResponse, error) {
+	_, userid, err := parseAuthorization(ctx, u.conf)
+	if err != nil {
+		return nil, err
+	}
+	_, err = u.uc.ConnectDiscord(ctx, userid, load.Code, load.RedirectUri)
+	if err != nil {
+		return nil, err
+	}
+	return &api.ConnectDiscordResponse{}, nil
+}
+
+func (u *UserService) DisconnectSocial(ctx context.Context, load *api.DisconnectSocialPayLoad) (*api.DisconnectSocialResponse, error) {
+	_, userid, err := parseAuthorization(ctx, u.conf)
+	if err != nil {
+		return nil, err
+	}
+	err = u.uc.DisconnectSocial(ctx, userid, load.Social)
+	if err != nil {
+		return nil, err
+	}
+	return &api.DisconnectSocialResponse{}, nil
+}
+
+func (u *UserService) TelegramBotDMWebhooks(ctx context.Context, load *api.TelegramBotDMWebhooksPayLoad) (*api.TelegramBotDMWebhooksResponse, error) {
+	if load.Message.From.IsBot {
+		return nil, errors.New("cannot response bot")
+	}
+	_, err := u.uc.ConnectTelegram(ctx, load.Message.Text, &model.TelegramUser{
+		ID:           load.Message.From.Id,
+		FirstName:    load.Message.From.FirstName,
+		Username:     load.Message.From.Username,
+		LanguageCode: load.Message.From.LanguageCode,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &api.TelegramBotDMWebhooksResponse{}, nil
 }
 
 func (u *UserService) OpenerGameMintRecord(ctx context.Context, load *api.OpenerGameMintRecordPayLoad) (*api.OpenerGameMintRecordResponse, error) {

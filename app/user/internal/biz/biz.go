@@ -43,10 +43,15 @@ type UserRepo interface {
 	GetOrCreateTelegramVerifyCode(ctx context.Context, userid string) (*model.TelegramVerify, error)
 	GenVerifyCode(ctx context.Context, userid string) (string, error)
 	GetUserByVerifyCode(ctx context.Context, verifyCode string) (*model.User, error)
+	GetUserByTelegramVerifyCode(ctx context.Context, code string) (string, error)
 }
 
 type TwitterRepo interface {
 	GetTwitterUserTimeline(userScreenName string) []string
+}
+
+type DiscordRepo interface {
+	GetDiscordInfo(code, redirectURI string) (*model.DiscordUser, error)
 }
 
 type PeopleLandContractRepo interface {
@@ -77,15 +82,17 @@ type OpenerGameRoundInfoRepo interface {
 type UserUseCase struct {
 	repo                   UserRepo
 	twitterRepo            TwitterRepo
+	discordRepo            DiscordRepo
 	peopleLandContractRepo PeopleLandContractRepo
 	logger                 *log.Logger
 	conf                   *conf.Config
 }
 
-func NewUserUseCase(repo UserRepo, twitterRepo TwitterRepo, peopleLandContractRepo PeopleLandContractRepo, conf *conf.Config, logger *log.Logger) *UserUseCase {
+func NewUserUseCase(repo UserRepo, twitterRepo TwitterRepo, discordRepo DiscordRepo, peopleLandContractRepo PeopleLandContractRepo, conf *conf.Config, logger *log.Logger) *UserUseCase {
 	return &UserUseCase{
 		repo:                   repo,
 		twitterRepo:            twitterRepo,
+		discordRepo:            discordRepo,
 		peopleLandContractRepo: peopleLandContractRepo,
 		logger:                 logger,
 		conf:                   conf,
@@ -200,6 +207,34 @@ func (u *UserUseCase) GenVerifyCode(ctx context.Context, userid string) (verifyC
 	}
 
 	return verifyCode, err
+}
+
+func (u *UserUseCase) ConnectDiscord(ctx context.Context, userid, code, redirectUri string) (*model.User, error) {
+	_, err := u.repo.GetUser(ctx, userid)
+	if err != nil {
+		return nil, err
+	}
+	discordUser, err := u.discordRepo.GetDiscordInfo(code, redirectUri)
+	if err != nil {
+		return nil, err
+	}
+	return u.repo.UpdateUser(ctx, userid, map[string]interface{}{"discord": discordUser})
+}
+
+func (u *UserUseCase) ConnectTelegram(ctx context.Context, code string, telegramUser *model.TelegramUser) (*model.User, error) {
+	userid, err := u.repo.GetUserByTelegramVerifyCode(ctx, code)
+	if err != nil {
+		return nil, err
+	}
+	return u.repo.UpdateUser(ctx, userid, map[string]interface{}{"telegram": telegramUser})
+}
+
+func (u *UserUseCase) DisconnectSocial(ctx context.Context, userid string, socialType v1.SocialType) error {
+	_, err := u.repo.UpdateUser(ctx, userid, map[string]interface{}{strings.ToLower(socialType.String()): nil})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 type OpenerGameCase struct {

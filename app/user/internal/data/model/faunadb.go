@@ -14,6 +14,7 @@ const (
 
 	TelegramVerifyCollectionName = "telegram_verify"
 	TelegramVerifyByUserIdIndex  = "telegram_verify_by_userid"
+	TelegramVerifyByCodeIndex    = "telegram_verify_by_code"
 
 	MintRecordCollectionName                        = "mint_records"
 	MintRecordsByMintAddressAndXAndYSortTsDescIndex = "mint_records_by_mint_address_and_x_and_y_sort_ts_desc"

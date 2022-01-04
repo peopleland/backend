@@ -16,6 +16,32 @@
     "application/json"
   ],
   "paths": {
+    "/user/v1/connect/discord": {
+      "put": {
+        "operationId": "User_ConnectDiscord",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1ConnectDiscordResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1ConnectDiscordPayLoad"
+            }
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
     "/user/v1/connect/telegram": {
       "put": {
         "operationId": "User_ConnectTelegram",
@@ -240,9 +266,114 @@
           "User"
         ]
       }
+    },
+    "/user/v1/social/disconnect": {
+      "post": {
+        "operationId": "User_DisconnectSocial",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1DisconnectSocialResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1DisconnectSocialPayLoad"
+            }
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
+    "/user/v1/telegram/webhooks/dm": {
+      "post": {
+        "operationId": "User_TelegramBotDMWebhooks",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1TelegramBotDMWebhooksResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1TelegramBotDMWebhooksPayLoad"
+            }
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
     }
   },
   "definitions": {
+    "TelegramDMDMChat": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        }
+      }
+    },
+    "TelegramDMDMFrom": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "is_bot": {
+          "type": "boolean"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "language_code": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ConnectDiscordPayLoad": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "redirect_uri": {
+          "type": "string"
+        }
+      }
+    },
+    "v1ConnectDiscordResponse": {
+      "type": "object"
+    },
     "v1ConnectTelegramPayLoad": {
       "type": "object"
     },
@@ -258,6 +389,34 @@
       "type": "object",
       "properties": {
         "twitter": {
+          "type": "string"
+        }
+      }
+    },
+    "v1DisconnectSocialPayLoad": {
+      "type": "object",
+      "properties": {
+        "social": {
+          "$ref": "#/definitions/v1SocialType"
+        }
+      }
+    },
+    "v1DisconnectSocialResponse": {
+      "type": "object"
+    },
+    "v1DiscordInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "discriminator": {
+          "type": "string"
+        },
+        "avatar": {
           "type": "string"
         }
       }
@@ -431,6 +590,70 @@
         }
       }
     },
+    "v1SocialType": {
+      "type": "string",
+      "enum": [
+        "TWITTER",
+        "DISCORD",
+        "TELEGRAM"
+      ],
+      "default": "TWITTER"
+    },
+    "v1TelegramBotDMWebhooksPayLoad": {
+      "type": "object",
+      "properties": {
+        "update_id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "message": {
+          "$ref": "#/definitions/v1TelegramDM"
+        }
+      }
+    },
+    "v1TelegramBotDMWebhooksResponse": {
+      "type": "object"
+    },
+    "v1TelegramDM": {
+      "type": "object",
+      "properties": {
+        "message_id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "from": {
+          "$ref": "#/definitions/TelegramDMDMFrom"
+        },
+        "chat": {
+          "$ref": "#/definitions/TelegramDMDMChat"
+        },
+        "date": {
+          "type": "string",
+          "format": "int64"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "v1TelegramInfo": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "first_name": {
+          "type": "string"
+        },
+        "username": {
+          "type": "string"
+        },
+        "language_code": {
+          "type": "string"
+        }
+      }
+    },
     "v1UserProfile": {
       "type": "object",
       "properties": {
@@ -447,10 +670,10 @@
           "type": "string"
         },
         "telegram": {
-          "type": "string"
+          "$ref": "#/definitions/v1TelegramInfo"
         },
         "discord": {
-          "type": "string"
+          "$ref": "#/definitions/v1DiscordInfo"
         }
       }
     }
