@@ -11,6 +11,7 @@ const (
 	UserCollectionName     = "users"
 	UsersByAddressIndex    = "users_by_address"
 	UsersByVerifyCodeIndex = "users_by_verify_code"
+	UsersByNameCodeIndex   = "users_by_name"
 
 	TelegramVerifyCollectionName = "telegram_verify"
 	TelegramVerifyByUserIdIndex  = "telegram_verify_by_userid"

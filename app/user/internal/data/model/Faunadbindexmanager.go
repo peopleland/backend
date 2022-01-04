@@ -19,6 +19,21 @@ func (manager *FaunaMetaManager) createCollectionByName(name string) {
 	}
 }
 
+func (manager *FaunaMetaManager) createUniqueIndex(collectionName string, indexName string, fieldName string) {
+	_, err := manager.fc.Query(
+		f.CreateIndex(f.Obj{
+			"name":   indexName,
+			"unique": true,
+			"source": f.Collection(collectionName),
+			"terms": f.Arr{
+				f.Obj{"field": f.Arr{"data", fieldName}},
+			},
+		}))
+	if err != nil {
+		panic(err)
+	}
+}
+
 func (manager *FaunaMetaManager) dropCollectionByName(name string) {
 	_, err := manager.fc.Query(f.Delete(f.Collection(name)))
 	if err != nil {
@@ -63,21 +78,9 @@ func (manager *FaunaMetaManager) CreateMintRecordMeta() {
 
 func (manager *FaunaMetaManager) CreateOpenerRecordMeta() {
 	manager.createCollectionByName(OpenerRecordCollectionName)
+	manager.createUniqueIndex(OpenerRecordCollectionName, OpenerRecordByTokenId, "token_id")
 
 	_, err := manager.fc.Query(
-		f.CreateIndex(f.Obj{
-			"name":   OpenerRecordByTokenId,
-			"unique": true,
-			"source": f.Collection(OpenerRecordCollectionName),
-			"terms": f.Arr{
-				f.Obj{"field": f.Arr{"data", "token_id"}},
-			},
-		}))
-	if err != nil {
-		panic(err)
-	}
-
-	_, err = manager.fc.Query(
 		f.CreateIndex(f.Obj{
 			"name":   OpenerRecordSortTokenIdDescIndex,
 			"source": f.Collection(OpenerRecordCollectionName),
@@ -93,17 +96,18 @@ func (manager *FaunaMetaManager) CreateOpenerRecordMeta() {
 
 func (manager *FaunaMetaManager) CreateOpenerGameRoundInfoMeta() {
 	manager.createCollectionByName(OpenerGameRoundInfoCollectionName)
+	manager.createUniqueIndex(OpenerGameRoundInfoCollectionName, OpenerGameRoundInfoByRoundNumberIndex, "round_number")
+}
 
-	_, err := manager.fc.Query(
-		f.CreateIndex(f.Obj{
-			"name":   OpenerGameRoundInfoByRoundNumberIndex,
-			"unique": true,
-			"source": f.Collection(OpenerGameRoundInfoCollectionName),
-			"terms": f.Arr{
-				f.Obj{"field": f.Arr{"data", "round_number"}},
-			},
-		}))
-	if err != nil {
-		panic(err)
-	}
+func (manager *FaunaMetaManager) CreateUserMeta() {
+	manager.createCollectionByName(UserCollectionName)
+	manager.createUniqueIndex(UserCollectionName, UsersByAddressIndex, "address")
+	manager.createUniqueIndex(UserCollectionName, UsersByVerifyCodeIndex, "verify_code")
+	manager.createUniqueIndex(UserCollectionName, UsersByNameCodeIndex, "name")
+}
+
+func (manager *FaunaMetaManager) CreateTelegramVerifyMeta() {
+	manager.createCollectionByName(TelegramVerifyCollectionName)
+	manager.createUniqueIndex(TelegramVerifyCollectionName, TelegramVerifyByUserIdIndex, "userid")
+	manager.createUniqueIndex(TelegramVerifyCollectionName, TelegramVerifyByCodeIndex, "code")
 }

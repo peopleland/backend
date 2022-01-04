@@ -31,14 +31,16 @@ func TestParseResult(t *testing.T) {
 	fmt.Println(get)
 }
 
-func TestCreateIndex(t *testing.T) {
-	//fc := faunadb.NewFaunaClient("fnAEbfitSAACVKRgPF0ZYX-Q3zZiIE3jQpr_9km0")
+func TestMigration(t *testing.T) {
+	//key := "fnAEbfitSAACVKRgPF0ZYX-Q3zZiIE3jQpr_9km0" // dev test
 
+	//fc := faunadb.NewFaunaClient(key)
 	//manager := FaunaMetaManager{fc}
+	//
+	//manager.CreateUserMeta()
+	//manager.CreateTelegramVerifyMeta()
+
+	//manager.CreateMintRecordMeta()
+	//manager.CreateOpenerRecordMeta()
 	//manager.CreateOpenerGameRoundInfoMeta()
-	//CreateOpenerRecordMeta(fc)
-
-	//CreateMintRecordMeta(fc)
-
-	//DropOpenerRecordCollection(fc)
 }
