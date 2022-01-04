@@ -254,9 +254,10 @@ func TestUserService_OpenerGameMintRecord(t *testing.T) {
 	openerRecordRepo := dt.NewOpenerRecordRepo(d, logger)
 	openerGameRoundInfoRepo := dt.NewOpenerGameRoundInfoRepo(d, logger)
 	discordRepo := dt.NewDiscordRepo(config)
+	peopleLandContractTheGraphRepo := dt.NewPeopleLandContractTheGraphRepo(config)
 
 	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, discordRepo, peopleLandContractRepo, config, logger)
-	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, config, logger)
+	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, peopleLandContractTheGraphRepo, config, logger)
 
 	us := &UserService{
 		uc:     userUseCase,
@@ -299,9 +300,10 @@ func TestUserService_OpenerGameOpenerRecordList(t *testing.T) {
 	openerRecordRepo := dt.NewOpenerRecordRepo(d, logger)
 	openerGameRoundInfoRepo := dt.NewOpenerGameRoundInfoRepo(d, logger)
 	discordRepo := dt.NewDiscordRepo(config)
+	peopleLandContractTheGraphRepo := dt.NewPeopleLandContractTheGraphRepo(config)
 
 	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, discordRepo, peopleLandContractRepo, config, logger)
-	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, config, logger)
+	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, peopleLandContractTheGraphRepo, config, logger)
 
 	us := &UserService{
 		uc:     userUseCase,
@@ -353,9 +355,10 @@ func TestUserService_GetOpenerGameRoundInfo(t *testing.T) {
 	openerRecordRepo := dt.NewOpenerRecordRepo(d, logger)
 	openerGameRoundInfoRepo := dt.NewOpenerGameRoundInfoRepo(d, logger)
 	discordRepo := dt.NewDiscordRepo(config)
+	peopleLandContractTheGraphRepo := dt.NewPeopleLandContractTheGraphRepo(config)
 
 	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, discordRepo, peopleLandContractRepo, config, logger)
-	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, config, logger)
+	openerGameCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, peopleLandContractTheGraphRepo, config, logger)
 
 	us := &UserService{
 		uc:     userUseCase,
