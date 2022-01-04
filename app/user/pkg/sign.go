@@ -17,10 +17,9 @@ func VerifyEip191Sig(address string, msg string, sigHex string) bool {
 	fromAddr := common.HexToAddress(address)
 
 	sig := hexutil.MustDecode(sigHex)
-	if sig[64] != 27 && sig[64] != 28 {
-		return false
+	if sig[64] >= 27 {
+		sig[64] -= 27
 	}
-	sig[64] -= 27
 
 	pubKey, err := crypto.SigToPub(eip191SignHash([]byte(msg)), sig)
 	if err != nil {
