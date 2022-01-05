@@ -83,6 +83,11 @@ func (r *userRepo) GetUserListByAddressList(_ context.Context, addressList []str
 		arr = append(arr, f.MatchTerm(f.Index(model.UsersByAddressIndex), address))
 	}
 
+	if len(arr) == 0 {
+		list := make([]*model.User, 0)
+		return list, nil
+	}
+
 	result, err := r.data.faunaClient.Query(
 		f.Map(
 			f.Paginate(
