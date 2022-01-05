@@ -39,12 +39,13 @@ type MintRecordRepo interface {
 }
 
 type OpenerRecordRepo interface {
-	GetListPaginateFirstPage(ctx context.Context, pageSize int64) ([]*model.OpenerRecord, error)
-	GetListPaginateAfter(ctx context.Context, pageSize int64, afterTokenId int64) ([]*model.OpenerRecord, error)
-	GetListPaginateBefore(ctx context.Context, pageSize int64, beforeTokenId int64) ([]*model.OpenerRecord, error)
+	GetListPaginateFirstPage(ctx context.Context, pageSize int64) (list []*model.OpenerRecord, afterTokenId int64, err error)
+	GetListPaginateAfter(ctx context.Context, pageSize int64, inputAfterTokenId int64) (list []*model.OpenerRecord, beforeTokenId int64, afterTokenId int64, err error)
+	GetListPaginateBefore(ctx context.Context, pageSize int64, inputBeforeTokenId int64) (list []*model.OpenerRecord, beforeTokenId int64, afterTokenId int64, err error)
 	SaveOpenerRecord(ctx context.Context, tokenId int64, data *model.OpenerRecord) (*model.OpenerRecord, error)
 	GetNewest(ctx context.Context) (*model.OpenerRecord, error)
 	GetOpenerRecordByTokenId(ctx context.Context, tokenId int64) (*model.OpenerRecord, error)
+	GetTotalCount(ctx context.Context) (int64, error)
 }
 
 type OpenerGameRoundInfoRepo interface {
