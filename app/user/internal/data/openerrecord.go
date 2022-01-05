@@ -194,7 +194,7 @@ func (repo *openerRecordRepo) GetListPaginateBefore(ctx context.Context, pageSiz
 		ctx,
 		f.Size(pageSize),
 		f.Before(f.Arr{
-			beforeTokenId,
+			inputBeforeTokenId,
 			f.Ref(f.Collection(model.OpenerRecordCollectionName), record.Ref.ID),
 		}),
 	)
