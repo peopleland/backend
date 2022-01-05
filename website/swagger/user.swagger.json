@@ -502,6 +502,18 @@
     "v1OpenerGameOpenerRecordListResponse": {
       "type": "object",
       "properties": {
+        "TotalCount": {
+          "type": "string",
+          "format": "int64"
+        },
+        "AfterTokenId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "beforeTokenId": {
+          "type": "string",
+          "format": "int64"
+        },
         "opener_records": {
           "type": "array",
           "items": {

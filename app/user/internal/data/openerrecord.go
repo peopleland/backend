@@ -116,7 +116,7 @@ func (repo *openerRecordRepo) SaveOpenerRecord(ctx context.Context, tokenId int6
 }
 
 func (repo *openerRecordRepo) GetNewest(ctx context.Context) (*model.OpenerRecord, error) {
-	list, err := repo.getListPaginate(ctx, f.Size(1))
+	list, _, _, err := repo.getListPaginate(ctx, f.Size(1))
 	if err != nil {
 		return nil, err
 	}
@@ -126,16 +126,50 @@ func (repo *openerRecordRepo) GetNewest(ctx context.Context) (*model.OpenerRecor
 	return nil, nil
 }
 
+func (repo *openerRecordRepo) GetTotalCount(_ context.Context) (int64, error) {
+	result, err := repo.data.faunaClient.Query(
+		f.Count(
+			f.Paginate(
+				f.Match(f.Index(model.OpenerRecordSortTokenIdDescIndex)),
+				f.Size(100_000),
+			),
+		),
+	)
+
+	if err != nil {
+		return 0, err
+	}
+
+	var data f.ArrayV
+	err = result.At(f.ObjKey("data")).Get(&data)
+	if err != nil {
+		return 0, err
+	}
+
+	if len(data) == 0 {
+		return 0, nil
+	}
+
+	var count int64
+	err = data[0].Get(&count)
+	if err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 // GetListPaginateFirstPage first page
-func (repo *openerRecordRepo) GetListPaginateFirstPage(ctx context.Context, pageSize int64) ([]*model.OpenerRecord, error) {
-	return repo.getListPaginate(ctx, f.Size(pageSize))
+func (repo *openerRecordRepo) GetListPaginateFirstPage(ctx context.Context, pageSize int64) (list []*model.OpenerRecord, afterTokenId int64, err error) {
+	list, _, afterTokenId, err = repo.getListPaginate(ctx, f.Size(pageSize))
+	return list, afterTokenId, err
 }
 
 // GetListPaginateAfter next page
-func (repo *openerRecordRepo) GetListPaginateAfter(ctx context.Context, pageSize int64, afterTokenId int64) ([]*model.OpenerRecord, error) {
-	record, err := repo.GetOpenerRecordByTokenId(ctx, afterTokenId)
+func (repo *openerRecordRepo) GetListPaginateAfter(ctx context.Context, pageSize int64, inputAfterTokenId int64) (list []*model.OpenerRecord, beforeTokenId int64, afterTokenId int64, err error) {
+	record, err := repo.GetOpenerRecordByTokenId(ctx, inputAfterTokenId)
 	if err != nil {
-		return nil, err
+		return nil, 0, 0, err
 	}
 
 	return repo.getListPaginate(
@@ -143,17 +177,17 @@ func (repo *openerRecordRepo) GetListPaginateAfter(ctx context.Context, pageSize
 		f.Size(pageSize),
 		f.After(
 			f.Arr{
-				afterTokenId,
+				inputAfterTokenId,
 				f.Ref(f.Collection(model.OpenerRecordCollectionName), record.Ref.ID),
 			}),
 	)
 }
 
 // GetListPaginateBefore prev page
-func (repo *openerRecordRepo) GetListPaginateBefore(ctx context.Context, pageSize int64, beforeTokenId int64) ([]*model.OpenerRecord, error) {
-	record, err := repo.GetOpenerRecordByTokenId(ctx, beforeTokenId)
+func (repo *openerRecordRepo) GetListPaginateBefore(ctx context.Context, pageSize int64, inputBeforeTokenId int64) (list []*model.OpenerRecord, beforeTokenId int64, afterTokenId int64, err error) {
+	record, err := repo.GetOpenerRecordByTokenId(ctx, inputBeforeTokenId)
 	if err != nil {
-		return nil, err
+		return nil, 0, 0, err
 	}
 
 	return repo.getListPaginate(
@@ -166,7 +200,7 @@ func (repo *openerRecordRepo) GetListPaginateBefore(ctx context.Context, pageSiz
 	)
 }
 
-func (repo *openerRecordRepo) getListPaginate(_ context.Context, paginateOptions ...f.OptionalParameter) ([]*model.OpenerRecord, error) {
+func (repo *openerRecordRepo) getListPaginate(_ context.Context, paginateOptions ...f.OptionalParameter) (list []*model.OpenerRecord, beforeTokenId int64, afterTokenId int64, err error) {
 	result, err := repo.data.faunaClient.Query(
 		f.Map(
 			f.Paginate(
@@ -181,18 +215,18 @@ func (repo *openerRecordRepo) getListPaginate(_ context.Context, paginateOptions
 	)
 
 	if err != nil {
-		return nil, err
+		return nil, 0, 0, err
 	}
 
 	var data f.ArrayV
 	err = result.At(f.ObjKey("data")).Get(&data)
 	if err != nil {
-		return nil, err
+		return nil, 0, 0, err
 	}
 
-	list := make([]*model.OpenerRecord, 0)
+	resultList := make([]*model.OpenerRecord, 0)
 	if len(data) == 0 {
-		return list, nil
+		return resultList, 0, 0, nil
 	}
 
 	for _, item := range data {
@@ -202,7 +236,22 @@ func (repo *openerRecordRepo) getListPaginate(_ context.Context, paginateOptions
 	}
 
 	if err != nil {
-		return nil, err
+		return nil, 0, 0, err
 	}
-	return list, nil
+
+	afterTokenId = 0
+	var after f.ArrayV
+	result.At(f.ObjKey("after")).Get(&after)
+	if after != nil {
+		_ = after[0].Get(&afterTokenId)
+	}
+
+	beforeTokenId = 0
+	var before f.ArrayV
+	result.At(f.ObjKey("before")).Get(&before)
+	if before != nil {
+		_ = before[0].Get(&beforeTokenId)
+	}
+
+	return list, beforeTokenId, afterTokenId, nil
 }

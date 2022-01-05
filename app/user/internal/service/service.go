@@ -218,11 +218,12 @@ func (u *UserService) OpenerGameOpenerRecordList(ctx context.Context, load *api.
 	if load.BeforeTokenId != nil {
 		beforeTokenId = *load.BeforeTokenId
 	}
-	list, err := u.ogc.GetOpenerRecordList(ctx, pageSize, afterTokenId, beforeTokenId)
+	info, err := u.ogc.GetOpenerRecordList(ctx, pageSize, afterTokenId, beforeTokenId)
 	if err != nil {
 		return nil, err
 	}
 
+	list := info.List
 	openerRecords := make([]*api.OpenerRecord, 0)
 	for _, item := range list {
 		openerRecords = append(openerRecords, &api.OpenerRecord{
@@ -239,7 +240,12 @@ func (u *UserService) OpenerGameOpenerRecordList(ctx context.Context, load *api.
 		})
 	}
 
-	return &api.OpenerGameOpenerRecordListResponse{OpenerRecords: openerRecords}, nil
+	return &api.OpenerGameOpenerRecordListResponse{
+		OpenerRecords: openerRecords,
+		TotalCount:    info.TotalCount,
+		AfterTokenId:  info.AfterTokenId,
+		BeforeTokenId: info.BeforeTokenId,
+	}, nil
 }
 
 func (u *UserService) GetOpenerGameRoundInfo(ctx context.Context, load *api.GetOpenerGameRoundInfoPayLoad) (*api.GetOpenerGameRoundInfoResponse, error) {

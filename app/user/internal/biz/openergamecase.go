@@ -21,6 +21,13 @@ type OpenerRecordWithUserName struct {
 	NextTokenBlockTimestamp int64
 }
 
+type OpenerRecordListPaginate struct {
+	List          []*OpenerRecordWithUserName
+	TotalCount    int64
+	AfterTokenId  int64
+	BeforeTokenId int64
+}
+
 type PeopleLandTokenInfo struct {
 	TokenId            int32
 	X                  int32
@@ -78,21 +85,29 @@ func (ogc *OpenerGameCase) FindInvitedUser(ctx context.Context, mintAddress stri
 	return user, nil
 }
 
-func (ogc *OpenerGameCase) GetOpenerRecordList(ctx context.Context, pageSize int64, afterTokenId int64, beforeTokenId int64) ([]*OpenerRecordWithUserName, error) {
-	if afterTokenId != 0 && beforeTokenId != 0 {
+func (ogc *OpenerGameCase) GetOpenerRecordList(ctx context.Context, pageSize int64, inputAfterTokenId int64, inputBeforeTokenId int64) (*OpenerRecordListPaginate, error) {
+	if inputAfterTokenId != 0 && inputBeforeTokenId != 0 {
 		return nil, errors.New("query.params.error")
 	}
 
-	var data []*model.OpenerRecord
 	var err error
-	if afterTokenId != 0 {
-		data, err = ogc.openerRecordRepo.GetListPaginateAfter(ctx, pageSize, afterTokenId)
+	totalCount, err := ogc.openerRecordRepo.GetTotalCount(ctx)
+	if err != nil {
+		return nil, err
 	}
-	if beforeTokenId != 0 {
-		data, err = ogc.openerRecordRepo.GetListPaginateBefore(ctx, pageSize, beforeTokenId)
+
+	var data []*model.OpenerRecord
+	var afterTokenId int64
+	var beforeTokenId int64
+
+	if inputAfterTokenId != 0 {
+		data, beforeTokenId, afterTokenId, err = ogc.openerRecordRepo.GetListPaginateAfter(ctx, pageSize, inputAfterTokenId)
 	}
-	if afterTokenId == 0 && beforeTokenId == 0 {
-		data, err = ogc.openerRecordRepo.GetListPaginateFirstPage(ctx, pageSize)
+	if inputBeforeTokenId != 0 {
+		data, beforeTokenId, afterTokenId, err = ogc.openerRecordRepo.GetListPaginateBefore(ctx, pageSize, inputBeforeTokenId)
+	}
+	if inputAfterTokenId == 0 && inputBeforeTokenId == 0 {
+		data, afterTokenId, err = ogc.openerRecordRepo.GetListPaginateFirstPage(ctx, pageSize)
 	}
 	if err != nil {
 		return nil, err
@@ -135,7 +150,12 @@ func (ogc *OpenerGameCase) GetOpenerRecordList(ctx context.Context, pageSize int
 			NextTokenBlockTimestamp: item.NextTokenBlockTimestamp,
 		})
 	}
-	return list, nil
+	return &OpenerRecordListPaginate{
+		List:          list,
+		TotalCount:    totalCount,
+		AfterTokenId:  afterTokenId,
+		BeforeTokenId: beforeTokenId,
+	}, nil
 }
 
 func (ogc *OpenerGameCase) GetOpenerGameRoundInfo(ctx context.Context, roundNumber int64) (*model.OpenerGameRoundInfo, *OpenerRecordWithUserName, error) {
@@ -194,4 +214,23 @@ func (ogc *OpenerGameCase) GetOpenerGameRoundInfo(ctx context.Context, roundNumb
 
 func (ogc *OpenerGameCase) SyncOpenerRecord(_ context.Context) {
 	// TODO sync opner record
+	/*
+		从 db 获取最新 opener_record  newest_token_id
+		if 不存在
+			获取 game info 开始时间
+			if game info 不存在
+				退出同步
+			从开始时间查询 the graph api 获取 un_sync_token_list
+		else
+			从 newest_token_id + 1 查询 the graph api 获取 un_sync_token_list
+
+		un_sync_token_list 是 id 正序的数组
+		if 数组为空
+			退出同步
+		把 un_sync_token_list[0].block info 更新到 opener_record(newest_token_id)
+		遍历 un_sync_token_list
+			if current 不是数组最后一个
+				current merge un_sync_token_list[current_index+1]。block_info
+			sync current to db
+	*/
 }

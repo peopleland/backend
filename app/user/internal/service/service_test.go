@@ -327,7 +327,7 @@ func TestUserService_OpenerGameOpenerRecordList(t *testing.T) {
 		panic(err)
 	}
 
-	var pageSize int64 = 20
+	var pageSize int64 = 1
 
 	tests := []struct {
 		name string
