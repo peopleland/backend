@@ -502,15 +502,15 @@
     "v1OpenerGameOpenerRecordListResponse": {
       "type": "object",
       "properties": {
-        "TotalCount": {
+        "total_count": {
           "type": "string",
           "format": "int64"
         },
-        "AfterTokenId": {
+        "after_token_id": {
           "type": "string",
           "format": "int64"
         },
-        "beforeTokenId": {
+        "before_token_id": {
           "type": "string",
           "format": "int64"
         },
