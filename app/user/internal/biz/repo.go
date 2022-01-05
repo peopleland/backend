@@ -43,6 +43,8 @@ type OpenerRecordRepo interface {
 	GetListPaginateAfter(ctx context.Context, pageSize int64, inputAfterTokenId int64) (list []*model.OpenerRecord, beforeTokenId int64, afterTokenId int64, err error)
 	GetListPaginateBefore(ctx context.Context, pageSize int64, inputBeforeTokenId int64) (list []*model.OpenerRecord, beforeTokenId int64, afterTokenId int64, err error)
 	SaveOpenerRecord(ctx context.Context, tokenId int64, data *model.OpenerRecord) (*model.OpenerRecord, error)
+	CreateOpenerRecord(ctx context.Context, tokenId int64, data *model.OpenerRecord) (*model.OpenerRecord, error)
+	UpdateOpenerRecord(ctx context.Context, tokenId int64, data *model.OpenerRecord) (*model.OpenerRecord, error)
 	GetNewest(ctx context.Context) (*model.OpenerRecord, error)
 	GetOpenerRecordByTokenId(ctx context.Context, tokenId int64) (*model.OpenerRecord, error)
 	GetTotalCount(ctx context.Context) (int64, error)
@@ -56,5 +58,6 @@ type OpenerGameRoundInfoRepo interface {
 }
 
 type PeopleLandContractTheGraphRepo interface {
-	GetTokenInfoList(fromTokenId int32) ([]*PeopleLandTokenInfo, error)
+	GetTokenInfoListByFromTokenId(fromTokenId int64) ([]*PeopleLandTokenInfo, error)
+	GetTokenInfoListByFromTimestamp(fromTimestamp int64) ([]*PeopleLandTokenInfo, error)
 }

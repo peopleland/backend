@@ -154,9 +154,9 @@ message OpenerGameOpenerRecordListPayLoad {
 }
 
 message OpenerGameOpenerRecordListResponse {
-  int64 TotalCount = 1;
-  int64 AfterTokenId = 2;
-  int64 beforeTokenId = 3;
+  int64 total_count = 1;
+  int64 after_token_id = 2;
+  int64 before_token_id = 3;
   repeated OpenerRecord opener_records = 4;
 }
 
