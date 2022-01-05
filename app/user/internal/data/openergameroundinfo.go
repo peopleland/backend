@@ -62,6 +62,13 @@ func (repo *OpenerGameRoundInfoRepo) Update(ctx context.Context, roundNumber int
 	return repo.updateByData(ctx, roundNumber, data)
 }
 
+func (repo *OpenerGameRoundInfoRepo) UpdateEth(ctx context.Context, roundNumber int64, eth string) (*model.OpenerGameRoundInfo, error) {
+	data := map[string]string{
+		"eth_amount": eth,
+	}
+	return repo.updateByData(ctx, roundNumber, data)
+}
+
 func (repo *OpenerGameRoundInfoRepo) updateByData(_ context.Context, roundNumber int64, data interface{}) (*model.OpenerGameRoundInfo, error) {
 	result, err := repo.data.faunaClient.Query(
 		f.Update(

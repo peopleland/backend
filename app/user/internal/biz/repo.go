@@ -31,6 +31,7 @@ type DiscordRepo interface {
 
 type PeopleLandContractRepo interface {
 	BalanceOf(address string) (*big.Int, error)
+	GetEthBalanceAt(blockNumber int64) (string, error)
 }
 
 type MintRecordRepo interface {
@@ -55,6 +56,7 @@ type OpenerGameRoundInfoRepo interface {
 	Create(ctx context.Context, roundNumber int64, data *model.OpenerGameRoundInfo) (*model.OpenerGameRoundInfo, error)
 	Update(ctx context.Context, roundNumber int64, data *model.OpenerGameRoundInfo) (*model.OpenerGameRoundInfo, error)
 	Save(ctx context.Context, roundNumber int64, data *model.OpenerGameRoundInfo) (*model.OpenerGameRoundInfo, error)
+	UpdateEth(ctx context.Context, roundNumber int64, eth string) (*model.OpenerGameRoundInfo, error)
 }
 
 type PeopleLandContractTheGraphRepo interface {

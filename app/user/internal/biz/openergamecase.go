@@ -5,6 +5,7 @@ import (
 	"backend/app/user/internal/data/model"
 	"context"
 	"errors"
+	"github.com/shopspring/decimal"
 	"log"
 	"strconv"
 )
@@ -46,18 +47,20 @@ type OpenerGameCase struct {
 	mintRecordRepo                 MintRecordRepo
 	openerRecordRepo               OpenerRecordRepo
 	openerGameRoundInfoRepo        OpenerGameRoundInfoRepo
+	peopleLandContractRepo         PeopleLandContractRepo
 	peopleLandContractTheGraphRepo PeopleLandContractTheGraphRepo
 	logger                         *log.Logger
 	conf                           *conf.Config
 }
 
-func NewOpenerGameCase(userRepo UserRepo, mintRecordRepo MintRecordRepo, openerRecordRepo OpenerRecordRepo, openerGameRoundInfoRepo OpenerGameRoundInfoRepo, peopleLandContractTheGraphRepo PeopleLandContractTheGraphRepo, conf *conf.Config, logger *log.Logger) *OpenerGameCase {
+func NewOpenerGameCase(userRepo UserRepo, mintRecordRepo MintRecordRepo, openerRecordRepo OpenerRecordRepo, openerGameRoundInfoRepo OpenerGameRoundInfoRepo, peopleLandContractTheGraphRepo PeopleLandContractTheGraphRepo, peopleLandContractRepo PeopleLandContractRepo, conf *conf.Config, logger *log.Logger) *OpenerGameCase {
 	return &OpenerGameCase{
 		userRepo:                       userRepo,
 		mintRecordRepo:                 mintRecordRepo,
 		openerRecordRepo:               openerRecordRepo,
 		openerGameRoundInfoRepo:        openerGameRoundInfoRepo,
 		peopleLandContractTheGraphRepo: peopleLandContractTheGraphRepo,
+		peopleLandContractRepo:         peopleLandContractRepo,
 		logger:                         logger,
 		conf:                           conf,
 	}
@@ -387,4 +390,67 @@ func (ogc *OpenerGameCase) setWinner(ctx context.Context, roundNumber int64, inf
 	}
 	ogc.logger.Println("sync.token.set_winner." + strconv.FormatInt(info.WinnerTokenId, 10) + ".success")
 	return nil
+}
+
+func (ogc *OpenerGameCase) SyncRoundInfoEth(ctx context.Context) {
+	info, err := ogc.openerGameRoundInfoRepo.GetByRoundNumber(ctx, 1)
+	if err != nil {
+		ogc.logger.Println(err)
+		return
+	}
+	if info == nil {
+		ogc.logger.Println("round_info.not_exists")
+		return
+	}
+
+	var record *model.OpenerRecord
+	record, err = ogc.openerRecordRepo.GetNewest(ctx)
+	if err != nil {
+		ogc.logger.Println(err)
+		return
+	}
+	if info.HasWinner {
+		record, err = ogc.openerRecordRepo.GetOpenerRecordByTokenId(ctx, info.WinnerTokenId)
+		if err != nil {
+			ogc.logger.Println(err)
+			return
+		}
+	}
+	if record == nil {
+		ogc.logger.Println("opener_record.empty")
+		return
+	}
+	ethStr, err := ogc.peopleLandContractRepo.GetEthBalanceAt(record.BlockNumber)
+	if err != nil {
+		ogc.logger.Println(err)
+		return
+	}
+
+	ethDecimal, err := decimal.NewFromString(ethStr)
+	if err != nil {
+		ogc.logger.Println(err)
+		return
+	}
+	subEthDecimal, err := decimal.NewFromString("1.32")
+	if err != nil {
+		ogc.logger.Println(err)
+		return
+	}
+	divEthDecimal, err := decimal.NewFromString("2")
+	if err != nil {
+		ogc.logger.Println(err)
+		return
+	}
+	result := ethDecimal.Sub(subEthDecimal)
+	resultStr := result.Div(divEthDecimal).String()
+
+	if info.EthAmount == resultStr {
+		return
+	}
+	_, err = ogc.openerGameRoundInfoRepo.UpdateEth(ctx, info.RoundNumber, resultStr)
+	if err != nil {
+		ogc.logger.Println(err)
+		return
+	}
+	return
 }
