@@ -32,7 +32,7 @@ func TestParseResult(t *testing.T) {
 }
 
 func TestMigration(t *testing.T) {
-	//key := "fnAEbfitSAACVKRgPF0ZYX-Q3zZiIE3jQpr_9km0" // dev test
+	//key := "fnAEbfitSAACVKRgPF0ZYX-Q3zZiIE3jQpr_9km0" // test
 
 	//fc := faunadb.NewFaunaClient(key)
 	//manager := FaunaMetaManager{fc}
