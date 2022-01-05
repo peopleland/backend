@@ -6,7 +6,10 @@ import (
 	"context"
 	"errors"
 	"log"
+	"strconv"
 )
+
+var winerTimeCon int64 = 24 * 60 * 60
 
 type OpenerRecordWithUserName struct {
 	MintAddress             string
@@ -213,28 +216,43 @@ func (ogc *OpenerGameCase) GetOpenerGameRoundInfo(ctx context.Context, roundNumb
 }
 
 func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
-	// TODO sync opner record
+	/*
+		获取 game info
+		if game info 不存在
+			退出同步
+		if 已经有获胜者
+			退出同步
+	*/
+	info, err := ogc.openerGameRoundInfoRepo.GetByRoundNumber(ctx, 1)
+	if err != nil {
+		ogc.logger.Println(err)
+		return
+	}
+	if info == nil {
+		ogc.logger.Println("round_info.not_exists")
+		return
+	}
+	if info.HasWinner {
+		ogc.logger.Println("round_info.has_winner")
+		return
+	}
+
 	/*
 		从 db 获取最新 opener_record  newest_token_id
 		if 不存在
 			获取 game info 开始时间
-			if game info 不存在
-				退出同步
 			从开始时间查询 the graph api 获取 un_sync_token_list
 		else
 			从 newest_token_id + 1 查询 the graph api 获取 un_sync_token_list
 
-		un_sync_token_list 是 id 正序的数组
+		获得 un_sync_token_list 是 id 正序的数组
 		if 数组为空
+			if newest_token 存在
+				判断是否有获胜者，并更新 info
 			退出同步
-		把 un_sync_token_list[0].block info 更新到 opener_record(newest_token_id)
-		遍历 un_sync_token_list
-			if current 不是数组最后一个
-				current merge un_sync_token_list[current_index+1]。block_info
-			sync current to db
 	*/
-
 	var unSyncTokenList []*PeopleLandTokenInfo
+	var thegraphTimestamp int64
 
 	newestRecord, err := ogc.openerRecordRepo.GetNewest(ctx)
 	if err != nil {
@@ -242,48 +260,73 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 		return
 	}
 	if newestRecord == nil {
-		info, err := ogc.openerGameRoundInfoRepo.GetByRoundNumber(ctx, 1)
-		if err != nil {
-			ogc.logger.Println(err)
-			return
-		}
-		if info == nil {
-			ogc.logger.Println("round_info.not_exists")
-			return
-		}
-		unSyncTokenList, err = ogc.peopleLandContractTheGraphRepo.GetTokenInfoListByFromTimestamp(info.StartTimestamp)
+		unSyncTokenList, thegraphTimestamp, err = ogc.peopleLandContractTheGraphRepo.GetTokenInfoListByFromTimestamp(info.StartTimestamp)
 		if err != nil {
 			ogc.logger.Println(err)
 			return
 		}
 	} else {
-		unSyncTokenList, err = ogc.peopleLandContractTheGraphRepo.GetTokenInfoListByFromTokenId(newestRecord.TokenId)
+		unSyncTokenList, thegraphTimestamp, err = ogc.peopleLandContractTheGraphRepo.GetTokenInfoListByFromTokenId(newestRecord.TokenId + 1)
 		if err != nil {
 			ogc.logger.Println(err)
 			return
 		}
 	}
-
 	if (len(unSyncTokenList)) == 0 {
 		ogc.logger.Println("un_sync_token_list.empty")
+		if newestRecord != nil {
+			if thegraphTimestamp-newestRecord.BlockTimestamp >= winerTimeCon {
+				err := ogc.setWinner(ctx, 1, info, newestRecord)
+				if err != nil {
+					ogc.logger.Println(err)
+				}
+			}
+		}
 		return
 	}
 
-	if unSyncTokenList[0].TokenId != newestRecord.TokenId+1 {
-		ogc.logger.Println("sync.next_token_block_timestamp.error")
-		return
+	/*
+		if newestRecord 存在
+			把 un_sync_token_list[0].block info 更新到 opener_record(newest_token_id)
+			if opener_record(newest_token_id) 获胜
+				更新 info 信息，更新获胜者
+				退出同步
+	*/
+	if newestRecord != nil {
+		if unSyncTokenList[0].TokenId != newestRecord.TokenId+1 {
+			ogc.logger.Println("sync.next_token_block_timestamp.error")
+			return
+		}
+		newestRecord.NextTokenBlockTimestamp = unSyncTokenList[0].GivedAtTimestamp
+		_, err = ogc.openerRecordRepo.UpdateOpenerRecord(ctx, newestRecord.TokenId, newestRecord)
+		if err != nil {
+			ogc.logger.Println(err)
+			return
+		}
+		if newestRecord.NextTokenBlockTimestamp-newestRecord.BlockTimestamp >= winerTimeCon {
+			err := ogc.setWinner(ctx, 1, info, newestRecord)
+			if err != nil {
+				ogc.logger.Println(err)
+				return
+			}
+			return
+		}
 	}
-	newestRecord.NextTokenBlockTimestamp = unSyncTokenList[0].GivedAtTimestamp
-	_, err = ogc.openerRecordRepo.UpdateOpenerRecord(ctx, newestRecord.TokenId, newestRecord)
-	if err != nil {
-		ogc.logger.Println(err)
-		return
-	}
+
+	/*
+		遍历 un_sync_token_list
+			if current 不是数组最后一个
+				current merge un_sync_token_list[current_index+1]。block_info
+			sync current to db
+			if opener_record(current) 获胜
+				更新 info 信息，更新获胜者
+				退出同步
+	*/
 	total := len(unSyncTokenList)
 	for index, item := range unSyncTokenList {
 		mintRecord, err := ogc.mintRecordRepo.FindLastMintRecord(
 			ctx,
-			item.MintedAddress,
+			item.OwnerAddress,
 			item.X,
 			item.Y,
 			item.GivedAtTimestamp,
@@ -302,7 +345,7 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 			invitedAddress = user.Address
 		}
 		record := &model.OpenerRecord{
-			MintAddress:    item.MintedAddress,
+			MintAddress:    item.OwnerAddress,
 			TokenId:        item.TokenId,
 			X:              item.X,
 			Y:              item.Y,
@@ -318,5 +361,30 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 			ogc.logger.Println(err)
 			return
 		}
+		ogc.logger.Println("sync.token." + strconv.FormatInt(record.TokenId, 10) + ".success")
+
+		if index != total-1 {
+			if record.NextTokenBlockTimestamp-record.BlockTimestamp >= winerTimeCon {
+				err := ogc.setWinner(ctx, 1, info, record)
+				if err != nil {
+					ogc.logger.Println(err)
+					return
+				}
+				return
+			}
+		}
+
 	}
+}
+
+func (ogc *OpenerGameCase) setWinner(ctx context.Context, roundNumber int64, info *model.OpenerGameRoundInfo, winnerRecord *model.OpenerRecord) error {
+	info.HasWinner = true
+	info.WinnerTokenId = winnerRecord.TokenId
+	info.EndTimestamp = winnerRecord.BlockTimestamp + winerTimeCon
+	_, err := ogc.openerGameRoundInfoRepo.Update(ctx, roundNumber, info)
+	if err != nil {
+		return err
+	}
+	ogc.logger.Println("sync.token.set_winner." + strconv.FormatInt(info.WinnerTokenId, 10) + ".success")
+	return nil
 }

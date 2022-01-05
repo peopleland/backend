@@ -58,6 +58,6 @@ type OpenerGameRoundInfoRepo interface {
 }
 
 type PeopleLandContractTheGraphRepo interface {
-	GetTokenInfoListByFromTokenId(fromTokenId int64) ([]*PeopleLandTokenInfo, error)
-	GetTokenInfoListByFromTimestamp(fromTimestamp int64) ([]*PeopleLandTokenInfo, error)
+	GetTokenInfoListByFromTokenId(fromTokenId int64) (list []*PeopleLandTokenInfo, blockTimestamp int64, err error)
+	GetTokenInfoListByFromTimestamp(fromTimestamp int64) (list []*PeopleLandTokenInfo, blockTimestamp int64, err error)
 }

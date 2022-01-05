@@ -8,6 +8,7 @@ import (
 	f "github.com/fauna/faunadb-go/v4/faunadb"
 	"log"
 	"regexp"
+	"strings"
 )
 
 type openerRecordRepo struct {
@@ -43,6 +44,8 @@ func (repo *openerRecordRepo) GetOpenerRecordByTokenId(_ context.Context, tokenI
 
 func (repo *openerRecordRepo) CreateOpenerRecord(_ context.Context, tokenId int64, data *model.OpenerRecord) (*model.OpenerRecord, error) {
 	data.TokenId = tokenId
+	data.MintAddress = strings.ToLower(data.MintAddress)
+	data.InvitedAddress = strings.ToLower(data.InvitedAddress)
 	result, err := repo.data.faunaClient.Query(
 		f.Create(f.Collection(model.OpenerRecordCollectionName),
 			f.Obj{"data": data}))
@@ -59,6 +62,8 @@ func (repo *openerRecordRepo) CreateOpenerRecord(_ context.Context, tokenId int6
 
 func (repo *openerRecordRepo) UpdateOpenerRecord(_ context.Context, tokenId int64, data *model.OpenerRecord) (*model.OpenerRecord, error) {
 	data.TokenId = tokenId
+	data.MintAddress = strings.ToLower(data.MintAddress)
+	data.InvitedAddress = strings.ToLower(data.InvitedAddress)
 	result, err := repo.data.faunaClient.Query(
 		f.Update(
 			f.Select(

@@ -8,6 +8,7 @@ import (
 	"errors"
 	"log"
 	"regexp"
+	"strings"
 
 	f "github.com/fauna/faunadb-go/v4/faunadb"
 )
@@ -25,6 +26,7 @@ func NewUserRepo(data *Data, logger *log.Logger) biz.UserRepo {
 }
 
 func (r *userRepo) CreateUser(ctx context.Context, address string) (*model.User, error) {
+	address = strings.ToLower(address)
 	result, err := r.data.faunaClient.Query(f.Create(f.Collection(model.UserCollectionName), f.Obj{"data": map[string]string{
 		"address": address,
 	}}))
@@ -59,6 +61,7 @@ func (r *userRepo) GetUser(ctx context.Context, userid string) (*model.User, err
 }
 
 func (r *userRepo) GetOneUserByAddress(ctx context.Context, address string) (*model.User, error) {
+	address = strings.ToLower(address)
 	result, err := r.data.faunaClient.Query(
 		f.Get(
 			f.MatchTerm(
@@ -80,7 +83,7 @@ func (r *userRepo) GetOneUserByAddress(ctx context.Context, address string) (*mo
 func (r *userRepo) GetUserListByAddressList(_ context.Context, addressList []string) ([]*model.User, error) {
 	arr := make([]f.Expr, 0)
 	for _, address := range addressList {
-		arr = append(arr, f.MatchTerm(f.Index(model.UsersByAddressIndex), address))
+		arr = append(arr, f.MatchTerm(f.Index(model.UsersByAddressIndex), strings.ToLower(address)))
 	}
 
 	if len(arr) == 0 {
@@ -128,6 +131,7 @@ func (r *userRepo) GetUserListByAddressList(_ context.Context, addressList []str
 }
 
 func (r *userRepo) FindOrCreateUser(ctx context.Context, address string) (*model.User, error) {
+	address = strings.ToLower(address)
 	user, err := r.GetOneUserByAddress(ctx, address)
 	if user != nil {
 		return user, nil
@@ -167,6 +171,7 @@ func (r *userRepo) UpdateUser(ctx context.Context, userid string, updateData map
 }
 
 func (r *userRepo) UpdateUserByAddress(ctx context.Context, address string, updateData map[string]interface{}) (*model.User, error) {
+	address = strings.ToLower(address)
 	get := f.Get(
 		f.MatchTerm(
 			f.Index(model.UsersByAddressIndex),
