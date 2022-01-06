@@ -61,25 +61,34 @@ func runMonitor(gameInfo *GameInfo) (isEmit bool, err error) {
 	  	return
 	*/
 	var list []*biz.PeopleLandTokenInfo
+	var listBlockTimestamp int64
 	if gameInfo.Data.OpenerRecord.TokenId != 0 {
-		list, _, err = peopleLandContractTheGraphRepo.GetTokenInfoListByFromTokenId(gameInfo.Data.OpenerRecord.TokenId + 1)
+		list, listBlockTimestamp, err = peopleLandContractTheGraphRepo.GetTokenInfoListByFromTokenId(gameInfo.Data.OpenerRecord.TokenId + 1)
 		if err != nil {
 			return false, err
 		}
 	} else {
-		list, _, err = peopleLandContractTheGraphRepo.GetTokenInfoListByFromTimestamp(gameInfo.Data.OpenerRecord.BlockTimestamp)
+		list, listBlockTimestamp, err = peopleLandContractTheGraphRepo.GetTokenInfoListByFromTimestamp(gameInfo.Data.OpenerRecord.BlockTimestamp)
 		if err != nil {
 			return false, err
 		}
 	}
 	if len(list) > 0 {
-		logger.Println("emit_sync")
+		logger.Println("have_news.emit_sync")
 		emitSync()
 		return true, err
-	} else {
-		logger.Println("no_news")
-		return false, err
 	}
+	if gameInfo.Data.OpenerRecord.TokenId != 0 {
+		if listBlockTimestamp-gameInfo.Data.OpenerRecord.BlockNumber >= biz.WinnerTimeCon {
+			logger.Println("have_winner.emit_sync")
+			emitSync()
+			return true, err
+		}
+	}
+
+	logger.Println("no_news")
+	return false, err
+
 }
 
 func getGameInfo() (*GameInfo, error) {

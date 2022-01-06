@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-var winerTimeCon int64 = 24 * 60 * 60
+var WinnerTimeCon int64 = 24 * 60 * 60
 
 type OpenerRecordWithUserName struct {
 	MintAddress             string
@@ -278,7 +278,7 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 	if (len(unSyncTokenList)) == 0 {
 		ogc.logger.Println("un_sync_token_list.empty")
 		if newestRecord != nil {
-			if thegraphTimestamp-newestRecord.BlockTimestamp >= winerTimeCon {
+			if thegraphTimestamp-newestRecord.BlockTimestamp >= WinnerTimeCon {
 				err := ogc.setWinner(ctx, 1, info, newestRecord)
 				if err != nil {
 					ogc.logger.Println(err)
@@ -306,7 +306,7 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 			ogc.logger.Println(err)
 			return
 		}
-		if newestRecord.NextTokenBlockTimestamp-newestRecord.BlockTimestamp >= winerTimeCon {
+		if newestRecord.NextTokenBlockTimestamp-newestRecord.BlockTimestamp >= WinnerTimeCon {
 			err := ogc.setWinner(ctx, 1, info, newestRecord)
 			if err != nil {
 				ogc.logger.Println(err)
@@ -367,7 +367,7 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 		ogc.logger.Println("sync.token." + strconv.FormatInt(record.TokenId, 10) + ".success")
 
 		if index != total-1 {
-			if record.NextTokenBlockTimestamp-record.BlockTimestamp >= winerTimeCon {
+			if record.NextTokenBlockTimestamp-record.BlockTimestamp >= WinnerTimeCon {
 				err := ogc.setWinner(ctx, 1, info, record)
 				if err != nil {
 					ogc.logger.Println(err)
@@ -383,7 +383,7 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 func (ogc *OpenerGameCase) setWinner(ctx context.Context, roundNumber int64, info *model.OpenerGameRoundInfo, winnerRecord *model.OpenerRecord) error {
 	info.HasWinner = true
 	info.WinnerTokenId = winnerRecord.TokenId
-	info.EndTimestamp = winnerRecord.BlockTimestamp + winerTimeCon
+	info.EndTimestamp = winnerRecord.BlockTimestamp + WinnerTimeCon
 	_, err := ogc.openerGameRoundInfoRepo.Update(ctx, roundNumber, info)
 	if err != nil {
 		return err
