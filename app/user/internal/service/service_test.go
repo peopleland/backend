@@ -459,4 +459,23 @@ func TestOpenerGameCase_SyncOpenerRecord(t *testing.T) {
 	//ctx := context.Background()
 	//gc.SyncOpenerRecord(ctx)
 	//gc.SyncRoundInfoEth(ctx)
+	/**
+	get opener record api and get game info api
+		1. have info and no opener record
+		2. have info not winner and have opener record
+		3. have info have winner and have opener record
+		4. opener record address have name
+
+	sync record content
+		1. no mint record and free
+		2. have mint record and free
+		3. no mint record and eth invited
+
+	sync record logic
+		1. 超过 24 小时没有新的 mint，能否同步获胜
+		2. 超过 24 小时时，有一个 新 mint ，更新状态情况是否正确
+		2. 超过 24 小时时，有多个 新 mint ，更新状态情况是否正确
+		3. eth 按照历史记录更新而不是最新状态
+		4. opener 区块有两个 token ，超过 24 小时获胜者是谁
+	*/
 }
