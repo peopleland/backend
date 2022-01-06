@@ -53,6 +53,8 @@ func main() {
 	e.LoadEnv("PEOPLELAND_ETH_CLIENT_RAW_URL")
 	e.LoadEnv("PEOPLELAND_CONTRACT_ADDRESS")
 
+	e.LoadEnv("PEOPLELAND_CONTRACT_THE_GRAPH_API_URL")
+
 	_ = e.LoadFile("./app/user/configs")
 	_ = e.Read(&config)
 
