@@ -338,7 +338,7 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 			ogc.logger.Println(err)
 			return
 		}
-		invitedAddress := ""
+		invitedAddress := item.MintedAddress
 		if mintRecord != nil {
 			user, err := ogc.userRepo.GetUser(ctx, mintRecord.InviteUserid)
 			if err != nil {
@@ -409,17 +409,22 @@ func (ogc *OpenerGameCase) SyncRoundInfoEth(ctx context.Context) {
 		ogc.logger.Println(err)
 		return
 	}
+	if record == nil {
+		ogc.logger.Println("opener_record.newest.nil")
+		return
+	}
 	if info.HasWinner {
 		record, err = ogc.openerRecordRepo.GetOpenerRecordByTokenId(ctx, info.WinnerTokenId)
 		if err != nil {
 			ogc.logger.Println(err)
 			return
 		}
+		if record == nil {
+			ogc.logger.Println("opener_record.winner_token.nil")
+			return
+		}
 	}
-	if record == nil {
-		ogc.logger.Println("opener_record.empty")
-		return
-	}
+
 	ethStr, err := ogc.peopleLandContractRepo.GetEthBalanceAt(record.BlockNumber)
 	if err != nil {
 		ogc.logger.Println(err)

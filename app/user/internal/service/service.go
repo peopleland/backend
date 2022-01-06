@@ -209,9 +209,12 @@ func (u *UserService) OpenerGameOpenerRecordList(ctx context.Context, load *api.
 	var pageSize int64 = 1000
 	var afterTokenId int64 = 0
 	var beforeTokenId int64 = 0
+	u.logger.Println("if load.PageSize")
 	if load.PageSize != nil {
+		u.logger.Println("load.PageSize", *load.PageSize)
 		pageSize = *load.PageSize
 	}
+	u.logger.Println("if load.PageSize end")
 	if load.AfterTokenId != nil {
 		afterTokenId = *load.AfterTokenId
 	}
@@ -222,7 +225,7 @@ func (u *UserService) OpenerGameOpenerRecordList(ctx context.Context, load *api.
 	if err != nil {
 		return nil, err
 	}
-
+	u.logger.Println("len(info.List)", len(info.List))
 	list := info.List
 	openerRecords := make([]*api.OpenerRecord, 0)
 	for _, item := range list {
