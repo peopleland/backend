@@ -61,7 +61,7 @@ func (repo *mintRecordRepo) FindLastMintRecord(_ context.Context, mintAddress st
 				f.Size(1),
 			),
 			f.Lambda(
-				f.Arr{"ts", "x", "y", "ref"},
+				f.Arr{"ts", "ref"},
 				f.Get(f.Var("ref")),
 			),
 		),

@@ -457,6 +457,6 @@ func TestOpenerGameCase_SyncOpenerRecord(t *testing.T) {
 	//gc := newOpenerGameCase()
 	//
 	//ctx := context.Background()
-	//gc.SyncRoundInfoEth(ctx)
 	//gc.SyncOpenerRecord(ctx)
+	//gc.SyncRoundInfoEth(ctx)
 }
