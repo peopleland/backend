@@ -61,25 +61,34 @@ func runMonitor(gameInfo *GameInfo) (isEmit bool, err error) {
 	  	return
 	*/
 	var list []*biz.PeopleLandTokenInfo
+	var listBlockTimestamp int64
 	if gameInfo.Data.OpenerRecord.TokenId != 0 {
-		list, _, err = peopleLandContractTheGraphRepo.GetTokenInfoListByFromTokenId(gameInfo.Data.OpenerRecord.TokenId + 1)
+		list, listBlockTimestamp, err = peopleLandContractTheGraphRepo.GetTokenInfoListByFromTokenId(gameInfo.Data.OpenerRecord.TokenId + 1)
 		if err != nil {
 			return false, err
 		}
 	} else {
-		list, _, err = peopleLandContractTheGraphRepo.GetTokenInfoListByFromTimestamp(gameInfo.Data.OpenerRecord.BlockTimestamp)
+		list, listBlockTimestamp, err = peopleLandContractTheGraphRepo.GetTokenInfoListByFromTimestamp(gameInfo.Data.OpenerRecord.BlockTimestamp)
 		if err != nil {
 			return false, err
 		}
 	}
 	if len(list) > 0 {
-		logger.Println("emit_sync")
+		logger.Println("have_news.emit_sync")
 		emitSync()
 		return true, err
-	} else {
-		logger.Println("no_news")
-		return false, err
 	}
+	if gameInfo.Data.OpenerRecord.TokenId != 0 {
+		if listBlockTimestamp-gameInfo.Data.OpenerRecord.BlockNumber >= biz.WinnerTimeCon {
+			logger.Println("have_winner.emit_sync")
+			emitSync()
+			return true, err
+		}
+	}
+
+	logger.Println("no_news")
+	return false, err
+
 }
 
 func getGameInfo() (*GameInfo, error) {
@@ -93,7 +102,7 @@ func getGameInfo() (*GameInfo, error) {
 	if err != nil {
 		return nil, err
 	}
-
+	logger.Println("get_game_info")
 	return &gameInfo, nil
 }
 
@@ -106,14 +115,13 @@ func process() {
 	}()
 
 	/**
-	  	通过 get game info api 获取
-	  	1. newest_opener_record_token_id
-	  	2. start timestamp
-	  if 没有获胜
-	  	15 秒轮训一次
+	通过 get game info api 获取 game info
+	if 没有获胜
+		轮训
+			如果有新状态，触发同步任务，暂停 15 秒 退出
+			如果没有新状态，暂停 5 秒
 	*/
 
-	//peopleLandContractTheGraphRepo
 	gameInfo, err := getGameInfo()
 	if err != nil {
 		panic(err)
@@ -164,7 +172,7 @@ func getConfig() *Config {
 }
 
 func main() {
-	logger.Println("syncmonitor", 1)
+	logger.Println("syncmonitor", 2)
 	config = getConfig()
 	peopleLandContractTheGraphRepo = initEnv(config)
 	for {

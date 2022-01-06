@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-var winerTimeCon int64 = 24 * 60 * 60
+var WinnerTimeCon int64 = 24 * 60 * 60
 
 type OpenerRecordWithUserName struct {
 	MintAddress             string
@@ -228,7 +228,7 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 	*/
 	info, err := ogc.openerGameRoundInfoRepo.GetByRoundNumber(ctx, 1)
 	if err != nil {
-		ogc.logger.Println(err)
+		ogc.logger.Println("1.error", err)
 		return
 	}
 	if info == nil {
@@ -259,29 +259,29 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 
 	newestRecord, err := ogc.openerRecordRepo.GetNewest(ctx)
 	if err != nil {
-		ogc.logger.Println(err)
+		ogc.logger.Println("2.error", err)
 		return
 	}
 	if newestRecord == nil {
 		unSyncTokenList, thegraphTimestamp, err = ogc.peopleLandContractTheGraphRepo.GetTokenInfoListByFromTimestamp(info.StartTimestamp)
 		if err != nil {
-			ogc.logger.Println(err)
+			ogc.logger.Println("3.error", err)
 			return
 		}
 	} else {
 		unSyncTokenList, thegraphTimestamp, err = ogc.peopleLandContractTheGraphRepo.GetTokenInfoListByFromTokenId(newestRecord.TokenId + 1)
 		if err != nil {
-			ogc.logger.Println(err)
+			ogc.logger.Println("4.error", err)
 			return
 		}
 	}
 	if (len(unSyncTokenList)) == 0 {
 		ogc.logger.Println("un_sync_token_list.empty")
 		if newestRecord != nil {
-			if thegraphTimestamp-newestRecord.BlockTimestamp >= winerTimeCon {
+			if thegraphTimestamp-newestRecord.BlockTimestamp >= WinnerTimeCon {
 				err := ogc.setWinner(ctx, 1, info, newestRecord)
 				if err != nil {
-					ogc.logger.Println(err)
+					ogc.logger.Println("5.error", err)
 				}
 			}
 		}
@@ -303,13 +303,13 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 		newestRecord.NextTokenBlockTimestamp = unSyncTokenList[0].GivedAtTimestamp
 		_, err = ogc.openerRecordRepo.UpdateOpenerRecord(ctx, newestRecord.TokenId, newestRecord)
 		if err != nil {
-			ogc.logger.Println(err)
+			ogc.logger.Println("6.error", err)
 			return
 		}
-		if newestRecord.NextTokenBlockTimestamp-newestRecord.BlockTimestamp >= winerTimeCon {
+		if newestRecord.NextTokenBlockTimestamp-newestRecord.BlockTimestamp >= WinnerTimeCon {
 			err := ogc.setWinner(ctx, 1, info, newestRecord)
 			if err != nil {
-				ogc.logger.Println(err)
+				ogc.logger.Println("7.error", err)
 				return
 			}
 			return
@@ -335,14 +335,14 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 			item.GivedAtTimestamp,
 		)
 		if err != nil {
-			ogc.logger.Println(err)
+			ogc.logger.Println("8.error", err)
 			return
 		}
 		invitedAddress := item.MintedAddress
 		if mintRecord != nil {
 			user, err := ogc.userRepo.GetUser(ctx, mintRecord.InviteUserid)
 			if err != nil {
-				ogc.logger.Println(err)
+				ogc.logger.Println("9.error", err)
 				return
 			}
 			invitedAddress = user.Address
@@ -361,16 +361,16 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 		}
 		_, err = ogc.openerRecordRepo.CreateOpenerRecord(ctx, record.TokenId, record)
 		if err != nil {
-			ogc.logger.Println(err)
+			ogc.logger.Println("10.error", err)
 			return
 		}
 		ogc.logger.Println("sync.token." + strconv.FormatInt(record.TokenId, 10) + ".success")
 
 		if index != total-1 {
-			if record.NextTokenBlockTimestamp-record.BlockTimestamp >= winerTimeCon {
+			if record.NextTokenBlockTimestamp-record.BlockTimestamp >= WinnerTimeCon {
 				err := ogc.setWinner(ctx, 1, info, record)
 				if err != nil {
-					ogc.logger.Println(err)
+					ogc.logger.Println("11.error", err)
 					return
 				}
 				return
@@ -383,7 +383,7 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 func (ogc *OpenerGameCase) setWinner(ctx context.Context, roundNumber int64, info *model.OpenerGameRoundInfo, winnerRecord *model.OpenerRecord) error {
 	info.HasWinner = true
 	info.WinnerTokenId = winnerRecord.TokenId
-	info.EndTimestamp = winnerRecord.BlockTimestamp + winerTimeCon
+	info.EndTimestamp = winnerRecord.BlockTimestamp + WinnerTimeCon
 	_, err := ogc.openerGameRoundInfoRepo.Update(ctx, roundNumber, info)
 	if err != nil {
 		return err
@@ -395,7 +395,7 @@ func (ogc *OpenerGameCase) setWinner(ctx context.Context, roundNumber int64, inf
 func (ogc *OpenerGameCase) SyncRoundInfoEth(ctx context.Context) {
 	info, err := ogc.openerGameRoundInfoRepo.GetByRoundNumber(ctx, 1)
 	if err != nil {
-		ogc.logger.Println(err)
+		ogc.logger.Println("12.error", err)
 		return
 	}
 	if info == nil {
@@ -406,7 +406,7 @@ func (ogc *OpenerGameCase) SyncRoundInfoEth(ctx context.Context) {
 	var record *model.OpenerRecord
 	record, err = ogc.openerRecordRepo.GetNewest(ctx)
 	if err != nil {
-		ogc.logger.Println(err)
+		ogc.logger.Println("13.error", err)
 		return
 	}
 	if record == nil {
@@ -416,7 +416,7 @@ func (ogc *OpenerGameCase) SyncRoundInfoEth(ctx context.Context) {
 	if info.HasWinner {
 		record, err = ogc.openerRecordRepo.GetOpenerRecordByTokenId(ctx, info.WinnerTokenId)
 		if err != nil {
-			ogc.logger.Println(err)
+			ogc.logger.Println("14.error", err)
 			return
 		}
 		if record == nil {
@@ -427,23 +427,23 @@ func (ogc *OpenerGameCase) SyncRoundInfoEth(ctx context.Context) {
 
 	ethStr, err := ogc.peopleLandContractRepo.GetEthBalanceAt(record.BlockNumber)
 	if err != nil {
-		ogc.logger.Println(err)
+		ogc.logger.Println("15.error", err)
 		return
 	}
 
 	ethDecimal, err := decimal.NewFromString(ethStr)
 	if err != nil {
-		ogc.logger.Println(err)
+		ogc.logger.Println("16.error", err)
 		return
 	}
 	subEthDecimal, err := decimal.NewFromString("1.32")
 	if err != nil {
-		ogc.logger.Println(err)
+		ogc.logger.Println("17.error", err)
 		return
 	}
 	divEthDecimal, err := decimal.NewFromString("2")
 	if err != nil {
-		ogc.logger.Println(err)
+		ogc.logger.Println("18.error", err)
 		return
 	}
 	result := ethDecimal.Sub(subEthDecimal)
@@ -454,7 +454,7 @@ func (ogc *OpenerGameCase) SyncRoundInfoEth(ctx context.Context) {
 	}
 	_, err = ogc.openerGameRoundInfoRepo.UpdateEth(ctx, info.RoundNumber, resultStr)
 	if err != nil {
-		ogc.logger.Println(err)
+		ogc.logger.Println("19.error", err)
 		return
 	}
 	return
