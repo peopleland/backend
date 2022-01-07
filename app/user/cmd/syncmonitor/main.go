@@ -172,7 +172,7 @@ func getConfig() *Config {
 }
 
 func main() {
-	logger.Println("syncmonitor", 3)
+	logger.Println("syncmonitor", 5)
 	config = getConfig()
 	peopleLandContractTheGraphRepo = initEnv(config)
 	for {
