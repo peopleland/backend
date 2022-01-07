@@ -79,7 +79,7 @@ func runMonitor(gameInfo *GameInfo) (isEmit bool, err error) {
 		return true, err
 	}
 	if gameInfo.Data.OpenerRecord.TokenId != 0 {
-		if listBlockTimestamp-gameInfo.Data.OpenerRecord.BlockNumber >= biz.WinnerTimeCon {
+		if listBlockTimestamp-gameInfo.Data.OpenerRecord.BlockTimestamp >= biz.WinnerTimeCon {
 			logger.Println("have_winner.emit_sync")
 			emitSync()
 			return true, err
@@ -172,7 +172,7 @@ func getConfig() *Config {
 }
 
 func main() {
-	logger.Println("syncmonitor", 2)
+	logger.Println("syncmonitor", 3)
 	config = getConfig()
 	peopleLandContractTheGraphRepo = initEnv(config)
 	for {
