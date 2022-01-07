@@ -297,7 +297,7 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 	*/
 	if newestRecord != nil {
 		if unSyncTokenList[0].TokenId != newestRecord.TokenId+1 {
-			ogc.logger.Println("sync.next_token_block_timestamp.error")
+			ogc.logger.Println("sync.token.sort.error.0")
 			return
 		}
 		newestRecord.NextTokenBlockTimestamp = unSyncTokenList[0].GivedAtTimestamp
@@ -327,6 +327,13 @@ func (ogc *OpenerGameCase) SyncOpenerRecord(ctx context.Context) {
 	*/
 	total := len(unSyncTokenList)
 	for index, item := range unSyncTokenList {
+		if index != 0 {
+			if item.TokenId != unSyncTokenList[index-1].TokenId+1 {
+				ogc.logger.Println("sync.token.sort.error.1")
+				return
+			}
+		}
+
 		mintRecord, err := ogc.mintRecordRepo.FindLastMintRecord(
 			ctx,
 			item.OwnerAddress,
