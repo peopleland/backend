@@ -37,12 +37,12 @@ type PeopleLandContractTheGraphMeta struct {
 }
 
 type PeopleLandContractTheGraphQueryByFromTokenId struct {
-	TokenInfos []PeopleLandContractTheGraphTokenInfo `graphql:"tokenInfos(first: 3, where: {tokenId_gte: $tokenId_gte}, orderBy: tokenId)"`
+	TokenInfos []PeopleLandContractTheGraphTokenInfo `graphql:"tokenInfos(first: 5, where: {tokenId_gte: $tokenId_gte}, orderBy: tokenId)"`
 	Meta       PeopleLandContractTheGraphMeta        `graphql:"_meta"`
 }
 
 type PeopleLandContractTheGraphQueryByFromTimestamp struct {
-	TokenInfos []PeopleLandContractTheGraphTokenInfo `graphql:"tokenInfos(first: 3, where: {givedAtTimestamp_gte: $givedAtTimestamp_gte}, orderBy: tokenId)"`
+	TokenInfos []PeopleLandContractTheGraphTokenInfo `graphql:"tokenInfos(first: 5, where: {givedAtTimestamp_gte: $givedAtTimestamp_gte}, orderBy: tokenId)"`
 	Meta       PeopleLandContractTheGraphMeta        `graphql:"_meta"`
 }
 

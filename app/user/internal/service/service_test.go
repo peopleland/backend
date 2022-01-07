@@ -472,10 +472,10 @@ func TestOpenerGameCase_SyncOpenerRecord(t *testing.T) {
 		3. no mint record and eth invited ok
 
 	sync record logic
-		1. 超过 24 小时没有新的 mint，能否同步获胜
-		2. 超过 24 小时时，有一个 新 mint ，更新状态情况是否正确
-		2. 超过 24 小时时，有多个 新 mint ，更新状态情况是否正确
-		3. eth 按照历史记录更新而不是最新状态
+		1. 超过 24 小时没有新的 mint，能否同步获胜 ok
+		2. 超过 24 小时时，有一个 新 mint ，更新状态情况是否正确 5
+		2. 超过 24 小时时，有多个 新 mint ，更新状态情况是否正确 4
+		3. eth 按照历史记录更新而不是最新状态 ok
 		4. opener 区块有两个 token ，超过 24 小时获胜者是谁
 	*/
 }
