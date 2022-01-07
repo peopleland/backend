@@ -461,15 +461,15 @@ func TestOpenerGameCase_SyncOpenerRecord(t *testing.T) {
 	//gc.SyncRoundInfoEth(ctx)
 	/**
 	get opener record api and get game info api
-		1. have info and no opener record
-		2. have info not winner and have opener record
-		3. have info have winner and have opener record
-		4. opener record address have name
+		1. have info and no opener record ok
+		2. have info not winner and have opener record ok
+		3. have info have winner and have opener record ok
+		4. opener record address have name ok
 
 	sync record content
-		1. no mint record and free
-		2. have mint record and free
-		3. no mint record and eth invited
+		1. no mint record and free ok
+		2. have mint record and free ok
+		3. no mint record and eth invited ok
 
 	sync record logic
 		1. 超过 24 小时没有新的 mint，能否同步获胜
