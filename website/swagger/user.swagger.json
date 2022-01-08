@@ -120,6 +120,30 @@
         ]
       }
     },
+    "/user/v1/info": {
+      "get": {
+        "operationId": "User_GetUserInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UserProfile"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
     "/user/v1/login": {
       "post": {
         "operationId": "User_Login",

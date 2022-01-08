@@ -20,4 +20,6 @@ type Config struct {
 	PeopleLandContractAddress string `mapstructure:"PEOPLELAND_CONTRACT_ADDRESS"`
 
 	PeopleLandContractTheGraphApiUrl string `mapstructure:"PEOPLELAND_CONTRACT_THE_GRAPH_API_URL"`
+
+	PrivateToken string `mapstructure:"PEOPLELAND_PRIVATE_KEY"`
 }

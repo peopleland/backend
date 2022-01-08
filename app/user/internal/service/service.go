@@ -93,6 +93,20 @@ func (u *UserService) GetProfile(ctx context.Context, load *api.GetProfilePayLoa
 	return u.parseProfile(profile), nil
 }
 
+func (u *UserService) GetUserInfo(ctx context.Context, load *api.GetUserInfoPayLoad) (*api.UserProfile, error) {
+	authStr := ctx.Value("authorization").(string)
+
+	if authStr != u.conf.PrivateToken {
+		return nil, errors.New("unauthorized")
+	}
+
+	profile, err := u.uc.GetProfile(ctx, load.Address)
+	if err != nil {
+		return nil, err
+	}
+	return u.parseProfile(profile), nil
+}
+
 func (u *UserService) PutProfile(ctx context.Context, load *api.PutProfilePayLoad) (*api.UserProfile, error) {
 	address, _, err := parseAuthorization(ctx, u.conf)
 	if err != nil {
