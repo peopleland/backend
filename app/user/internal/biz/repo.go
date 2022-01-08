@@ -4,7 +4,26 @@ import (
 	"backend/app/user/internal/data/model"
 	"context"
 	"math/big"
+	"time"
 )
+
+type DiscordSendMessageRequest struct {
+	Content string `json:"content"`
+	Tts     bool   `json:"tts"`
+	Embeds  []struct {
+		Title       string `json:"title"`
+		Description string `json:"description"`
+	} `json:"embeds"`
+}
+
+type DiscordMessageResponse struct {
+	Id              string    `json:"id"`
+	Type            int       `json:"type"`
+	Content         string    `json:"content"`
+	ChannelId       string    `json:"channel_id"`
+	MentionEveryone bool      `json:"mention_everyone"`
+	Timestamp       time.Time `json:"timestamp"`
+}
 
 type UserRepo interface {
 	CreateUser(ctx context.Context, address string) (*model.User, error)
@@ -27,6 +46,7 @@ type TwitterRepo interface {
 
 type DiscordRepo interface {
 	GetDiscordInfo(code, redirectURI string) (*model.DiscordUser, error)
+	SendDiscordMessage(channelId string, request *DiscordSendMessageRequest) (*DiscordMessageResponse, error)
 }
 
 type PeopleLandContractRepo interface {
