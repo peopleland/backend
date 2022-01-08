@@ -5,6 +5,7 @@ import (
 	"backend/app/user/internal/conf"
 	"backend/app/user/internal/data/model"
 	"fmt"
+	"time"
 
 	"github.com/parnurzeal/gorequest"
 )
@@ -16,13 +17,17 @@ const (
 type discordRepo struct {
 	ClientID     string
 	ClientSecret string
-	request      *gorequest.SuperAgent
+
+	BotToken string
+
+	request *gorequest.SuperAgent
 }
 
 func NewDiscordRepo(conf *conf.Config) biz.DiscordRepo {
 	return &discordRepo{
 		ClientID:     conf.DiscordBotClientID,
 		ClientSecret: conf.DiscordBotClientSecret,
+		BotToken:     conf.DiscordBotToken,
 		request:      gorequest.New(),
 	}
 }
@@ -68,4 +73,33 @@ func (d *discordRepo) GetDiscordInfo(code, redirectURI string) (*model.DiscordUs
 		return nil, fmt.Errorf("request discord user, err=%+v", errors[0])
 	}
 	return &user, nil
+}
+
+type DiscordSendMessageRequest struct {
+	Content string `json:"content"`
+	Tts     bool   `json:"tts"`
+	Embeds  []struct {
+		Title       string `json:"title"`
+		Description string `json:"description"`
+	} `json:"embeds"`
+}
+
+type DiscordMessageResponse struct {
+	Id              string    `json:"id"`
+	Type            int       `json:"type"`
+	Content         string    `json:"content"`
+	ChannelId       string    `json:"channel_id"`
+	MentionEveryone bool      `json:"mention_everyone"`
+	Timestamp       time.Time `json:"timestamp"`
+}
+
+func (d *discordRepo) SendDiscordMessage(channelId string, request *DiscordSendMessageRequest) (*DiscordMessageResponse, error) {
+	var resp DiscordMessageResponse
+	_, _, errors := d.request.Post(API_ENDPOINT+fmt.Sprintf("/channels/%s/messages", channelId)).
+		Set("Authorization", fmt.Sprintf("Bot %s", d.BotToken)).Send(*request).
+		EndStruct(&resp)
+	if errors != nil {
+		return nil, fmt.Errorf("request discord send message, err=%+v", errors[0])
+	}
+	return &resp, nil
 }
