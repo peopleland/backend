@@ -5,8 +5,6 @@ import (
 	"backend/app/user/internal/conf"
 	"backend/app/user/internal/data/model"
 	"fmt"
-	"time"
-
 	"github.com/parnurzeal/gorequest"
 )
 
@@ -75,26 +73,8 @@ func (d *discordRepo) GetDiscordInfo(code, redirectURI string) (*model.DiscordUs
 	return &user, nil
 }
 
-type DiscordSendMessageRequest struct {
-	Content string `json:"content"`
-	Tts     bool   `json:"tts"`
-	Embeds  []struct {
-		Title       string `json:"title"`
-		Description string `json:"description"`
-	} `json:"embeds"`
-}
-
-type DiscordMessageResponse struct {
-	Id              string    `json:"id"`
-	Type            int       `json:"type"`
-	Content         string    `json:"content"`
-	ChannelId       string    `json:"channel_id"`
-	MentionEveryone bool      `json:"mention_everyone"`
-	Timestamp       time.Time `json:"timestamp"`
-}
-
-func (d *discordRepo) SendDiscordMessage(channelId string, request *DiscordSendMessageRequest) (*DiscordMessageResponse, error) {
-	var resp DiscordMessageResponse
+func (d *discordRepo) SendDiscordMessage(channelId string, request *biz.DiscordSendMessageRequest) (*biz.DiscordMessageResponse, error) {
+	var resp biz.DiscordMessageResponse
 	_, _, errors := d.request.Post(API_ENDPOINT+fmt.Sprintf("/channels/%s/messages", channelId)).
 		Set("Authorization", fmt.Sprintf("Bot %s", d.BotToken)).Send(*request).
 		EndStruct(&resp)
