@@ -232,7 +232,7 @@ func runMonitor(gameInfo *GameInfo) (isEmit bool, err error) {
 			return false, err
 		}
 	} else {
-		list, listBlockTimestamp, err = peopleLandContractTheGraphRepo.GetTokenInfoListByFromTimestamp(gameInfo.Data.OpenerRecord.BlockTimestamp)
+		list, listBlockTimestamp, err = peopleLandContractTheGraphRepo.GetTokenInfoListByFromTimestamp(gameInfo.Data.Info.StartTimestamp)
 		if err != nil {
 			return false, err
 		}
@@ -348,7 +348,7 @@ func getConfig() {
 }
 
 func main() {
-	logger.Println("syncmonitor", 8)
+	logger.Println("syncmonitor", 9)
 	getConfig()
 	initEnv()
 	for {
