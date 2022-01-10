@@ -28,7 +28,7 @@ test:
 	go test -v ./... -cover
 
 build-user:
-	mkdir -p bin/ && go build -o bin/user app/user/cmd/main.go && go build -o bin/sync-opener-record-background app/user/cmd/background/syncopenerrecordbackground.go && go build -o website/syncmonitor app/user/cmd/syncmonitor/main.go
+	mkdir -p bin/ && go build -o bin/user app/user/cmd/main.go && go build -o bin/sync-opener-record-background app/user/cmd/background/syncopenerrecordbackground.go && go build -o website/syncmonitor app/user/cmd/syncmonitor/main.go app/user/cmd/syncmonitor/uniswap.go
 
 
 build-all: build-user
