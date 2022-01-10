@@ -98,7 +98,26 @@ func durationToString(dur time.Duration) string {
 	hour := int64(dur.Hours())
 	minute := int64(dur.Minutes()) - hour*60
 	second := int64(dur.Seconds()) - hour*60*60 - minute*60
-	return fmt.Sprintf("%02d:%02d:%02d", hour, minute, second)
+	if hour > 0 {
+		return fmt.Sprintf("%d hours and %d minutes", hour, minute)
+	}
+	if minute > 0 {
+		return fmt.Sprintf("%d minutes", minute)
+	}
+	return fmt.Sprintf("%d seconds", second)
+}
+
+func durationToCnString(dur time.Duration) string {
+	hour := int64(dur.Hours())
+	minute := int64(dur.Minutes()) - hour*60
+	second := int64(dur.Seconds()) - hour*60*60 - minute*60
+	if hour > 0 {
+		return fmt.Sprintf("%d 小时 %d 分", hour, minute)
+	}
+	if minute > 0 {
+		return fmt.Sprintf("%d 分钟", minute)
+	}
+	return fmt.Sprintf("%d 秒", second)
 }
 
 func sendOpenerChangeToDiscord(gameInfo *GameInfo) {
@@ -117,7 +136,7 @@ func sendOpenerChangeToDiscord(gameInfo *GameInfo) {
 
 	message := fmt.Sprintf(
 		"恭喜, %s 成为新任 Opener, MINT 了 (%s, %s), 距离宝箱打开还有 %s，当前宝箱总价值 $%s !!!\n\nCongratulations, %s is the new Opener, MINT (%s, %s), %s more to go until the chest is opened, the total value of the current chest is $%s !!!",
-		info.MintAddress, info.X, info.Y, durationToString(dur), amount,
+		info.MintAddress, info.X, info.Y, durationToCnString(dur), amount,
 		info.MintAddress, info.X, info.Y, durationToString(dur), amount,
 	)
 	_, err = discordRepo.SendDiscordMessage(ChannelId, &biz.DiscordSendMessageRequest{
@@ -140,7 +159,7 @@ func sendLiveMessage(gameInfo *GameInfo, source time.Duration) {
 
 	message := fmt.Sprintf(
 		"恭喜, 当前 Opener 是 %s, MINT 了 (%s, %s), 距离宝箱打开还有 %s，当前宝箱总价值 $%s !!!\n\nCongratulations, the current Opener is %s, MINT (%s, %s), %s to open the treasure chest, the total value of the current treasure chest is $%s !!!",
-		info.MintAddress, info.X, info.Y, durationToString(dur), amount,
+		info.MintAddress, info.X, info.Y, durationToCnString(dur), amount,
 		info.MintAddress, info.X, info.Y, durationToString(dur), amount,
 	)
 	_, err = discordRepo.SendDiscordMessage(ChannelId, &biz.DiscordSendMessageRequest{
@@ -329,7 +348,7 @@ func getConfig() {
 }
 
 func main() {
-	logger.Println("syncmonitor", 7)
+	logger.Println("syncmonitor", 8)
 	getConfig()
 	initEnv()
 	for {
