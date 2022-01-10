@@ -120,6 +120,30 @@
         ]
       }
     },
+    "/user/v1/info": {
+      "get": {
+        "operationId": "User_GetUserInfo",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1UserProfile"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "address",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "User"
+        ]
+      }
+    },
     "/user/v1/login": {
       "post": {
         "operationId": "User_Login",
@@ -502,6 +526,18 @@
     "v1OpenerGameOpenerRecordListResponse": {
       "type": "object",
       "properties": {
+        "total_count": {
+          "type": "string",
+          "format": "int64"
+        },
+        "after_token_id": {
+          "type": "string",
+          "format": "int64"
+        },
+        "before_token_id": {
+          "type": "string",
+          "format": "int64"
+        },
         "opener_records": {
           "type": "array",
           "items": {

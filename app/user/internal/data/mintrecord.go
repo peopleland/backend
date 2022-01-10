@@ -6,6 +6,7 @@ import (
 	"context"
 	f "github.com/fauna/faunadb-go/v4/faunadb"
 	"log"
+	"strings"
 )
 
 type mintRecordRepo struct {
@@ -21,6 +22,7 @@ func NewMintRecordRepo(data *Data, logger *log.Logger) biz.MintRecordRepo {
 }
 
 func (repo *mintRecordRepo) CreateMintRecord(_ context.Context, mintAddress string, x string, y string, userid string) (*model.MintRecord, error) {
+	mintAddress = strings.ToLower(mintAddress)
 	data := model.MintRecord{
 		MintAddress:  mintAddress,
 		X:            x,
@@ -44,6 +46,7 @@ func (repo *mintRecordRepo) CreateMintRecord(_ context.Context, mintAddress stri
 }
 
 func (repo *mintRecordRepo) FindLastMintRecord(_ context.Context, mintAddress string, x string, y string, mintTimestamp int64) (*model.MintRecord, error) {
+	mintAddress = strings.ToLower(mintAddress)
 	result, err := repo.data.faunaClient.Query(
 		f.Map(
 			f.Paginate(
@@ -58,7 +61,7 @@ func (repo *mintRecordRepo) FindLastMintRecord(_ context.Context, mintAddress st
 				f.Size(1),
 			),
 			f.Lambda(
-				f.Arr{"ts", "x", "y", "ref"},
+				f.Arr{"ts", "ref"},
 				f.Get(f.Var("ref")),
 			),
 		),
@@ -67,7 +70,7 @@ func (repo *mintRecordRepo) FindLastMintRecord(_ context.Context, mintAddress st
 		return nil, err
 	}
 	var data f.ArrayV
-	result.At(f.ObjKey("data")).Get(&data)
+	_ = result.At(f.ObjKey("data")).Get(&data)
 	if len(data) == 0 {
 		return nil, nil
 	}

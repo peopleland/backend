@@ -24,6 +24,11 @@ service User {
       body: "*"
     };
   }
+  rpc GetUserInfo (GetUserInfoPayLoad) returns (UserProfile) {
+    option (google.api.http) = {
+      get: "/user/v1/info",
+    };
+  }
   rpc ConnectTwitter (ConnectTwitterPayLoad) returns (UserProfile) {
     option (google.api.http) = {
       put: "/user/v1/connect/twitter",
@@ -119,6 +124,10 @@ message PutProfilePayLoad {
   string address = 2;
 }
 
+message GetUserInfoPayLoad {
+  string address = 1;
+}
+
 message ConnectTwitterPayLoad {
   string twitter = 1;
 }
@@ -154,7 +163,10 @@ message OpenerGameOpenerRecordListPayLoad {
 }
 
 message OpenerGameOpenerRecordListResponse {
-  repeated OpenerRecord opener_records = 1;
+  int64 total_count = 1;
+  int64 after_token_id = 2;
+  int64 before_token_id = 3;
+  repeated OpenerRecord opener_records = 4;
 }
 
 message OpenerRecord {

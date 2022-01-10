@@ -26,7 +26,7 @@ func initApp(conf *conf.Config, logger *log.Logger) (*http.Server, error) {
 	peopleLandContractTheGraphRepo := data.NewPeopleLandContractTheGraphRepo(conf)
 
 	userUseCase := biz.NewUserUseCase(userRepo, twitterRepo, discordRepo, peopleLandContractRepo, conf, logger)
-	mintRecordCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, peopleLandContractTheGraphRepo, conf, logger)
+	mintRecordCase := biz.NewOpenerGameCase(userRepo, mintRecordRepo, openerRecordRepo, openerGameRoundInfoRepo, peopleLandContractTheGraphRepo, peopleLandContractRepo, conf, logger)
 
 	userService := service.NewUserService(userUseCase, mintRecordCase, conf, logger)
 
@@ -52,6 +52,10 @@ func main() {
 
 	e.LoadEnv("PEOPLELAND_ETH_CLIENT_RAW_URL")
 	e.LoadEnv("PEOPLELAND_CONTRACT_ADDRESS")
+
+	e.LoadEnv("PEOPLELAND_CONTRACT_THE_GRAPH_API_URL")
+
+	e.LoadEnv("PEOPLELAND_PRIVATE_KEY")
 
 	_ = e.LoadFile("./app/user/configs")
 	_ = e.Read(&config)

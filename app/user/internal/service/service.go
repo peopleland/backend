@@ -93,6 +93,20 @@ func (u *UserService) GetProfile(ctx context.Context, load *api.GetProfilePayLoa
 	return u.parseProfile(profile), nil
 }
 
+func (u *UserService) GetUserInfo(ctx context.Context, load *api.GetUserInfoPayLoad) (*api.UserProfile, error) {
+	authStr := ctx.Value("authorization").(string)
+
+	if authStr != u.conf.PrivateToken {
+		return nil, errors.New("unauthorized")
+	}
+
+	profile, err := u.uc.GetProfile(ctx, load.Address)
+	if err != nil {
+		return nil, err
+	}
+	return u.parseProfile(profile), nil
+}
+
 func (u *UserService) PutProfile(ctx context.Context, load *api.PutProfilePayLoad) (*api.UserProfile, error) {
 	address, _, err := parseAuthorization(ctx, u.conf)
 	if err != nil {
@@ -218,11 +232,11 @@ func (u *UserService) OpenerGameOpenerRecordList(ctx context.Context, load *api.
 	if load.BeforeTokenId != nil {
 		beforeTokenId = *load.BeforeTokenId
 	}
-	list, err := u.ogc.GetOpenerRecordList(ctx, pageSize, afterTokenId, beforeTokenId)
+	info, err := u.ogc.GetOpenerRecordList(ctx, pageSize, afterTokenId, beforeTokenId)
 	if err != nil {
 		return nil, err
 	}
-
+	list := info.List
 	openerRecords := make([]*api.OpenerRecord, 0)
 	for _, item := range list {
 		openerRecords = append(openerRecords, &api.OpenerRecord{
@@ -239,7 +253,12 @@ func (u *UserService) OpenerGameOpenerRecordList(ctx context.Context, load *api.
 		})
 	}
 
-	return &api.OpenerGameOpenerRecordListResponse{OpenerRecords: openerRecords}, nil
+	return &api.OpenerGameOpenerRecordListResponse{
+		OpenerRecords: openerRecords,
+		TotalCount:    info.TotalCount,
+		AfterTokenId:  info.AfterTokenId,
+		BeforeTokenId: info.BeforeTokenId,
+	}, nil
 }
 
 func (u *UserService) GetOpenerGameRoundInfo(ctx context.Context, load *api.GetOpenerGameRoundInfoPayLoad) (*api.GetOpenerGameRoundInfoResponse, error) {

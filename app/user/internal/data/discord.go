@@ -5,7 +5,6 @@ import (
 	"backend/app/user/internal/conf"
 	"backend/app/user/internal/data/model"
 	"fmt"
-
 	"github.com/parnurzeal/gorequest"
 )
 
@@ -16,13 +15,17 @@ const (
 type discordRepo struct {
 	ClientID     string
 	ClientSecret string
-	request      *gorequest.SuperAgent
+
+	BotToken string
+
+	request *gorequest.SuperAgent
 }
 
 func NewDiscordRepo(conf *conf.Config) biz.DiscordRepo {
 	return &discordRepo{
 		ClientID:     conf.DiscordBotClientID,
 		ClientSecret: conf.DiscordBotClientSecret,
+		BotToken:     conf.DiscordBotToken,
 		request:      gorequest.New(),
 	}
 }
@@ -68,4 +71,15 @@ func (d *discordRepo) GetDiscordInfo(code, redirectURI string) (*model.DiscordUs
 		return nil, fmt.Errorf("request discord user, err=%+v", errors[0])
 	}
 	return &user, nil
+}
+
+func (d *discordRepo) SendDiscordMessage(channelId string, request *biz.DiscordSendMessageRequest) (*biz.DiscordMessageResponse, error) {
+	var resp biz.DiscordMessageResponse
+	_, _, errors := d.request.Post(API_ENDPOINT+fmt.Sprintf("/channels/%s/messages", channelId)).
+		Set("Authorization", fmt.Sprintf("Bot %s", d.BotToken)).Send(*request).
+		EndStruct(&resp)
+	if errors != nil {
+		return nil, fmt.Errorf("request discord send message, err=%+v", errors[0])
+	}
+	return &resp, nil
 }

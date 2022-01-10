@@ -25,6 +25,7 @@ type UserLambdaServer interface {
 	GenVerifyCode(context.Context, *GenVerifyCodePayLoad) (*GenVerifyCodeResponse, error)
 	GetOpenerGameRoundInfo(context.Context, *GetOpenerGameRoundInfoPayLoad) (*GetOpenerGameRoundInfoResponse, error)
 	GetProfile(context.Context, *GetProfilePayLoad) (*UserProfile, error)
+	GetUserInfo(context.Context, *GetUserInfoPayLoad) (*UserProfile, error)
 	Login(context.Context, *LoginPayLoad) (*LoginResponse, error)
 	OpenerGameMintRecord(context.Context, *OpenerGameMintRecordPayLoad) (*OpenerGameMintRecordResponse, error)
 	OpenerGameOpenerRecordList(context.Context, *OpenerGameOpenerRecordListPayLoad) (*OpenerGameOpenerRecordListResponse, error)
@@ -37,6 +38,7 @@ func RegisterUserLambdaServer(s *http.Server, srv UserLambdaServer) {
 	g.POSTX("/user/v1/login", _User_Login0_Lambda_Handler(srv))
 	g.GETX("/user/v1/profile", _User_GetProfile0_Lambda_Handler(srv))
 	g.PUTX("/user/v1/profile", _User_PutProfile0_Lambda_Handler(srv))
+	g.GETX("/user/v1/info", _User_GetUserInfo0_Lambda_Handler(srv))
 	g.PUTX("/user/v1/connect/twitter", _User_ConnectTwitter0_Lambda_Handler(srv))
 	g.PUTX("/user/v1/connect/telegram", _User_ConnectTelegram0_Lambda_Handler(srv))
 	g.PUTX("/user/v1/connect/discord", _User_ConnectDiscord0_Lambda_Handler(srv))
@@ -114,6 +116,32 @@ func _User_PutProfile0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Contex
 		//})
 		//out, err := h(ctx, &in)
 		out, err := srv.PutProfile(ctx.Ctx, &in)
+		if err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//reply := out.(*UserProfile)
+		return ctx.JSON(http.StatusOK, map[string]interface{}{
+			"data": out,
+		})
+	}
+}
+
+func _User_GetUserInfo0_Lambda_Handler(srv UserLambdaServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in GetUserInfoPayLoad
+		if err := ctx.BindQuery(&in); err != nil {
+			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
+				"error": err.Error(),
+			})
+		}
+		//http.SetOperation(ctx,"/api.user.v1.User/GetUserInfo")
+		//h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+		//	return srv.GetUserInfo(ctx, req.(*GetUserInfoPayLoad))
+		//})
+		//out, err := h(ctx, &in)
+		out, err := srv.GetUserInfo(ctx.Ctx, &in)
 		if err != nil {
 			return ctx.JSON(http.StatusInternalServerError, map[string]interface{}{
 				"error": err.Error(),
@@ -377,6 +405,8 @@ func _User_DisconnectSocial0_Lambda_Handler(srv UserLambdaServer) func(ctx http.
 //
 //	GetProfile(ctx context.Context, req *GetProfilePayLoad, opts ...http.CallOption) (rsp *UserProfile, err error)
 //
+//	GetUserInfo(ctx context.Context, req *GetUserInfoPayLoad, opts ...http.CallOption) (rsp *UserProfile, err error)
+//
 //	Login(ctx context.Context, req *LoginPayLoad, opts ...http.CallOption) (rsp *LoginResponse, err error)
 //
 //	OpenerGameMintRecord(ctx context.Context, req *OpenerGameMintRecordPayLoad, opts ...http.CallOption) (rsp *OpenerGameMintRecordResponse, err error)
@@ -481,6 +511,19 @@ func _User_DisconnectSocial0_Lambda_Handler(srv UserLambdaServer) func(ctx http.
 //	pattern := "/user/v1/profile"
 //	path := binding.EncodeURL(pattern, in, true)
 //	opts = append(opts, http.Operation("/api.user.v1.User/GetProfile"))
+//	opts = append(opts, http.PathTemplate(pattern))
+//	//	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
+//	//	if err != nil {
+//		return nil, err
+//	}
+//	return &out, err
+//}
+//
+//func (c *UserLambdaClientImpl) GetUserInfo(ctx context.Context, in *GetUserInfoPayLoad, opts ...http.CallOption) (*UserProfile, error) {
+//	var out UserProfile
+//	pattern := "/user/v1/info"
+//	path := binding.EncodeURL(pattern, in, true)
+//	opts = append(opts, http.Operation("/api.user.v1.User/GetUserInfo"))
 //	opts = append(opts, http.PathTemplate(pattern))
 //	//	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 //	//	if err != nil {
