@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"github.com/parnurzeal/gorequest"
 	"log"
+	"strconv"
 	"time"
 )
 
@@ -56,12 +57,42 @@ var logger = log.Default()
 var config *Config
 var peopleLandContractTheGraphRepo biz.PeopleLandContractTheGraphRepo
 var discordRepo biz.DiscordRepo
+var uniswap *UniswapRepo
 
 var lastLiveMessageInfo *LiveMessageHistory
 
 var currentOpenerTokenId int64
 
 const ChannelId = "929277955203547136"
+
+func getEthAndBuilderAmount(ethCount string, builderCount string) (string, error) {
+	ethCountFloat, err := strconv.ParseFloat(ethCount, 64)
+	if err != nil {
+		return "", nil
+	}
+	builderCountFloat, err := strconv.ParseFloat(builderCount, 64)
+	if err != nil {
+		return "", nil
+	}
+	builderPrice, err := uniswap.GetBuilderPrice()
+	if err != nil {
+		return "", nil
+	}
+	ethPrice, err := uniswap.GetEthPrice()
+	if err != nil {
+		return "", nil
+	}
+	builderPriceFloat, err := strconv.ParseFloat(builderPrice, 64)
+	if err != nil {
+		return "", nil
+	}
+	ethPriceFloat, err := strconv.ParseFloat(ethPrice, 64)
+	if err != nil {
+		return "", nil
+	}
+	result := ethPriceFloat*ethCountFloat + builderPriceFloat*builderCountFloat
+	return fmt.Sprintf("%.2f", result), nil
+}
 
 func durationToString(dur time.Duration) string {
 	hour := int64(dur.Hours())
@@ -70,7 +101,13 @@ func durationToString(dur time.Duration) string {
 	return fmt.Sprintf("%02d:%02d:%02d", hour, minute, second)
 }
 
-func sendOpenerChangeToDiscord(info *OpenerRecord) {
+func sendOpenerChangeToDiscord(gameInfo *GameInfo) {
+	amount, err := getEthAndBuilderAmount(gameInfo.Data.Info.EthAmount, gameInfo.Data.Info.BuilderTokenAmount)
+	if err != nil {
+		return
+	}
+
+	info := gameInfo.Data.OpenerRecord
 	timestamp := info.BlockTimestamp
 	dur := time.Unix(timestamp, 0).Add(24 * time.Hour).Sub(time.Now())
 
@@ -79,10 +116,11 @@ func sendOpenerChangeToDiscord(info *OpenerRecord) {
 	}
 
 	message := fmt.Sprintf(
-		"恭喜, 当前 Opener 是 %s, MINT 了 (%s, %s), 距离宝箱打开还有 %s",
-		info.MintAddress, info.X, info.Y, durationToString(dur),
+		"恭喜, %s 成为新任 Opener, MINT 了 (%s, %s), 距离宝箱打开还有 %s，当前宝箱总价值 $%s !!!\n\nCongratulations, %s is the new Opener, MINT (%s, %s), %s more to go until the chest is opened, the total value of the current chest is $%s !!!",
+		info.MintAddress, info.X, info.Y, durationToString(dur), amount,
+		info.MintAddress, info.X, info.Y, durationToString(dur), amount,
 	)
-	_, err := discordRepo.SendDiscordMessage(ChannelId, &biz.DiscordSendMessageRequest{
+	_, err = discordRepo.SendDiscordMessage(ChannelId, &biz.DiscordSendMessageRequest{
 		Content: message,
 	})
 	if err == nil {
@@ -90,15 +128,22 @@ func sendOpenerChangeToDiscord(info *OpenerRecord) {
 	}
 }
 
-func sendLiveMessage(info *OpenerRecord, source time.Duration) {
+func sendLiveMessage(gameInfo *GameInfo, source time.Duration) {
+	amount, err := getEthAndBuilderAmount(gameInfo.Data.Info.EthAmount, gameInfo.Data.Info.BuilderTokenAmount)
+	if err != nil {
+		return
+	}
+
+	info := &gameInfo.Data.OpenerRecord
 	timestamp := info.BlockTimestamp
 	dur := time.Unix(timestamp, 0).Add(24 * time.Hour).Sub(time.Now())
 
 	message := fmt.Sprintf(
-		"恭喜, 当前 Opener 是 %s, MINT 了 (%s, %s), 距离宝箱打开还有 %s",
-		info.MintAddress, info.X, info.Y, durationToString(dur),
+		"恭喜, 当前 Opener 是 %s, MINT 了 (%s, %s), 距离宝箱打开还有 %s，当前宝箱总价值 $%s !!!\n\nCongratulations, the current Opener is %s, MINT (%s, %s), %s to open the treasure chest, the total value of the current treasure chest is $%s !!!",
+		info.MintAddress, info.X, info.Y, durationToString(dur), amount,
+		info.MintAddress, info.X, info.Y, durationToString(dur), amount,
 	)
-	_, err := discordRepo.SendDiscordMessage(ChannelId, &biz.DiscordSendMessageRequest{
+	_, err = discordRepo.SendDiscordMessage(ChannelId, &biz.DiscordSendMessageRequest{
 		Content: message,
 	})
 	if err == nil {
@@ -110,7 +155,8 @@ func sendLiveMessage(info *OpenerRecord, source time.Duration) {
 	}
 }
 
-func trySendOpenerLiveToDiscord(info *OpenerRecord) {
+func trySendOpenerLiveToDiscord(gameInfo *GameInfo) {
+	info := &gameInfo.Data.OpenerRecord
 	timestamp := info.BlockTimestamp
 	// 剩余 1 个小时， 10分钟，五分钟，一分钟
 	dur := time.Unix(timestamp, 0).Add(24 * time.Hour).Sub(time.Now())
@@ -124,22 +170,22 @@ func trySendOpenerLiveToDiscord(info *OpenerRecord) {
 	}
 	if dur <= time.Minute {
 		if lastLiveMessageInfo == nil || lastLiveMessageInfo.Source > time.Minute {
-			sendLiveMessage(info, time.Minute)
+			sendLiveMessage(gameInfo, time.Minute)
 		}
 	}
 	if dur <= time.Minute*5 {
 		if lastLiveMessageInfo == nil || lastLiveMessageInfo.Source > time.Minute*5 {
-			sendLiveMessage(info, time.Minute*5)
+			sendLiveMessage(gameInfo, time.Minute*5)
 		}
 	}
 	if dur <= time.Minute*10 {
 		if lastLiveMessageInfo == nil || lastLiveMessageInfo.Source > time.Minute*10 {
-			sendLiveMessage(info, time.Minute*10)
+			sendLiveMessage(gameInfo, time.Minute*10)
 		}
 	}
 	if dur <= time.Hour {
 		if lastLiveMessageInfo == nil || lastLiveMessageInfo.Source > time.Hour {
-			sendLiveMessage(info, time.Hour)
+			sendLiveMessage(gameInfo, time.Hour)
 		}
 	}
 }
@@ -174,9 +220,9 @@ func runMonitor(gameInfo *GameInfo) (isEmit bool, err error) {
 	}
 
 	if gameInfo.Data.OpenerRecord.TokenId != 0 && currentOpenerTokenId != gameInfo.Data.OpenerRecord.TokenId {
-		go func(info *OpenerRecord) {
-			sendOpenerChangeToDiscord(info)
-		}(&gameInfo.Data.OpenerRecord)
+		go func(gameInfo *GameInfo) {
+			sendOpenerChangeToDiscord(gameInfo)
+		}(gameInfo)
 	}
 
 	if len(list) > 0 {
@@ -191,7 +237,7 @@ func runMonitor(gameInfo *GameInfo) (isEmit bool, err error) {
 			return true, err
 		}
 
-		trySendOpenerLiveToDiscord(&gameInfo.Data.OpenerRecord)
+		trySendOpenerLiveToDiscord(gameInfo)
 	}
 	logger.Println("no_news")
 	return false, err
@@ -264,6 +310,7 @@ func initEnv() {
 	}
 	peopleLandContractTheGraphRepo = data.NewPeopleLandContractTheGraphRepo(conff)
 	discordRepo = data.NewDiscordRepo(conff)
+	uniswap = NewUniswapRepo()
 }
 
 func getConfig() {
@@ -282,7 +329,7 @@ func getConfig() {
 }
 
 func main() {
-	logger.Println("syncmonitor", 6)
+	logger.Println("syncmonitor", 7)
 	getConfig()
 	initEnv()
 	for {
