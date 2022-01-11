@@ -207,6 +207,16 @@ func trySendOpenerLiveToDiscord(gameInfo *GameInfo) {
 			sendLiveMessage(gameInfo, time.Hour)
 		}
 	}
+	if dur <= time.Hour*2 {
+		if lastLiveMessageInfo == nil || lastLiveMessageInfo.Source > time.Hour*2 {
+			sendLiveMessage(gameInfo, time.Hour*2)
+		}
+	}
+	if dur <= time.Hour*12 {
+		if lastLiveMessageInfo == nil || lastLiveMessageInfo.Source > time.Hour*12 {
+			sendLiveMessage(gameInfo, time.Hour*12)
+		}
+	}
 }
 
 func emitSync() {
@@ -348,7 +358,7 @@ func getConfig() {
 }
 
 func main() {
-	logger.Println("syncmonitor", 9)
+	logger.Println("syncmonitor", 10)
 	getConfig()
 	initEnv()
 	for {
