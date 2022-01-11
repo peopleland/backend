@@ -358,7 +358,7 @@ func getConfig() {
 }
 
 func main() {
-	logger.Println("syncmonitor", 9)
+	logger.Println("syncmonitor", 10)
 	getConfig()
 	initEnv()
 	for {
